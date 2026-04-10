@@ -1,4 +1,5 @@
 import { LayoutDashboard, LineChart, ShieldAlert, Sparkles, SlidersHorizontal } from "lucide-react";
+import Logo from "./Logo";
 
 const ICONS = {
   overview: LayoutDashboard,
@@ -11,21 +12,20 @@ const ICONS = {
 export default function Sidebar({ sections, active, onSelect }) {
   return (
     <nav
-      className="glass-panel flex h-full w-[220px] flex-shrink-0 flex-col border-r border-cyan-500/15 bg-slate-950/40 py-6 pl-4 pr-3"
+      className="flex h-full w-[240px] flex-shrink-0 flex-col border-r border-slate-800 bg-slate-900/40 py-6 pl-4 pr-3"
       aria-label="Main navigation"
     >
-      <div className="mb-8 px-2">
-        <div className="flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/30 to-violet-600/40 text-lg font-black text-cyan-200 shadow-[0_0_24px_rgba(34,211,238,0.25)]">
-            K
+      <div className="mb-8 px-3">
+        <div className="flex items-center gap-3">
+          <div className="text-blue-500">
+            <Logo className="h-8 w-8" />
           </div>
           <div>
-            <p className="text-sm font-bold tracking-wide text-white">KPO Intel</p>
-            <p className="text-[10px] uppercase tracking-[0.2em] text-cyan-400/80">MSE · AI</p>
+            <p className="text-lg font-bold tracking-tight text-white">Vertex</p>
           </div>
         </div>
       </div>
-      <ul className="flex flex-1 flex-col gap-1">
+      <ul className="flex flex-1 flex-col gap-1.5 px-1">
         {sections.map((s) => {
           const Icon = ICONS[s.id] || LayoutDashboard;
           const isActive = active === s.id;
@@ -34,30 +34,30 @@ export default function Sidebar({ sections, active, onSelect }) {
               <button
                 type="button"
                 onClick={() => onSelect(s.id)}
-                className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition-all duration-200 ${
+                className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors duration-200 ${
                   isActive
-                    ? "bg-gradient-to-r from-cyan-500/20 to-violet-600/20 text-cyan-100 shadow-[inset_0_0_20px_rgba(34,211,238,0.12)]"
-                    : "text-slate-400 hover:bg-white/5 hover:text-slate-200"
+                    ? "bg-blue-600/10 text-blue-400"
+                    : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200"
                 }`}
               >
                 <Icon
-                  className={`h-5 w-5 flex-shrink-0 transition-transform group-hover:scale-110 ${
-                    isActive ? "text-cyan-300" : "text-slate-500 group-hover:text-cyan-400/80"
+                  className={`h-5 w-5 flex-shrink-0 transition-transform ${
+                    isActive ? "text-blue-500" : "text-slate-500 group-hover:text-slate-400"
                   }`}
                   aria-hidden
                 />
                 <span>{s.label}</span>
                 {isActive && (
-                  <span className="ml-auto h-1.5 w-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]" aria-hidden />
+                  <span className="ml-auto h-1.5 w-1.5 rounded-full bg-blue-500" aria-hidden />
                 )}
               </button>
             </li>
           );
         })}
       </ul>
-      <p className="mt-auto px-2 pt-4 text-[10px] leading-relaxed text-slate-600">
-        Neural analytics layer · v1
-      </p>
+      <div className="mt-auto px-3 border-t border-slate-800 pt-4">
+        <p className="text-xs font-medium text-slate-500">Platform v2</p>
+      </div>
     </nav>
   );
 }

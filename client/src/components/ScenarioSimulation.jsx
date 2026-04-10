@@ -122,14 +122,14 @@ export default function ScenarioSimulation({ financials, risk, rowsCount }) {
       <div className="flex-1 space-y-6">
         <div>
           <h3 className="text-xl font-medium tracking-wide text-slate-100 flex items-center gap-2 mb-2">
-            <span className="w-1.5 h-6 bg-cyan-400 rounded-full block"></span>
+            <span className="w-1.5 h-6 bg-blue-400 rounded-full block"></span>
             Scenario Engine
           </h3>
           
           <div className="flex flex-wrap gap-2 mb-4">
             <button onClick={() => setExpAdj(-10)} className="px-3 py-1 text-xs rounded border border-rose-500/30 bg-rose-500/10 text-rose-300 hover:bg-rose-500/20 transition-colors">Reduce Costs 10%</button>
             <button onClick={() => setRevAdj(20)} className="px-3 py-1 text-xs rounded border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 transition-colors">Increase Revenue 20%</button>
-            <button onClick={() => setInvestment((p) => p + 50000)} className="px-3 py-1 text-xs rounded border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 transition-colors">Add $50K Investment</button>
+            <button onClick={() => setInvestment((p) => p + 50000)} className="px-3 py-1 text-xs rounded border border-blue-500/30 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 transition-colors">Add $50K Investment</button>
             <button onClick={() => { setRevAdj(0); setExpAdj(0); setInvestment(0); }} className="px-3 py-1 text-xs rounded border border-white/10 bg-white/5 text-slate-400 hover:bg-white/10 transition-colors ml-auto">Reset</button>
           </div>
         </div>
@@ -161,13 +161,13 @@ export default function ScenarioSimulation({ financials, risk, rowsCount }) {
 
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <label className="font-medium text-cyan-400">New Investment ($)</label>
-              <span className="text-cyan-100">${Number(investment).toLocaleString()}</span>
+              <label className="font-medium text-blue-400">New Investment ($)</label>
+              <span className="text-blue-100">${Number(investment).toLocaleString()}</span>
             </div>
             <input 
               type="range" min="0" max="1000000" step="5000" value={investment} 
               onChange={(e) => setInvestment(Number(e.target.value))}
-              className="w-full accent-cyan-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"
+              className="w-full accent-blue-500 h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"
             />
           </div>
         </div>
@@ -190,7 +190,7 @@ export default function ScenarioSimulation({ financials, risk, rowsCount }) {
               <tr>
                 <th className="px-4 py-2 font-medium">Metric</th>
                 <th className="px-4 py-2 font-medium border-l border-white/5">Current</th>
-                <th className="px-4 py-2 font-medium border-l border-white/5 text-cyan-300">Simulated</th>
+                <th className="px-4 py-2 font-medium border-l border-white/5 text-blue-300">Simulated</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
@@ -208,7 +208,7 @@ export default function ScenarioSimulation({ financials, risk, rowsCount }) {
                 <td className="px-4 py-3 border-l border-white/5 font-mono">
                   {financials.runway !== null ? `${financials.runway} mo` : '∞'}
                 </td>
-                <td className="px-4 py-3 border-l border-white/5 font-mono font-bold text-cyan-300">
+                <td className="px-4 py-3 border-l border-white/5 font-mono font-bold text-blue-300">
                   {simParams.simRunway !== null ? `${simParams.simRunway.toFixed(1)} mo` : '∞ (Sustainable)'}
                 </td>
               </tr>

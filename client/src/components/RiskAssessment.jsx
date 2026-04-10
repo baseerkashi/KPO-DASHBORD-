@@ -10,9 +10,9 @@ export default function RiskAssessment({ risk, className = "" }) {
   };
 
   return (
-    <section className={`glass-panel border-violet-500/20 p-5 ${className}`}>
+    <section className={`glass-panel border-indigo-500/20 p-5 ${className}`}>
       <div className="mb-4 flex items-center gap-2">
-        <ShieldAlert className="h-5 w-5 text-violet-400" />
+        <ShieldAlert className="h-5 w-5 text-indigo-400" />
         <h2 className="text-lg font-semibold text-white">Risk assessment</h2>
       </div>
 
@@ -42,7 +42,7 @@ export default function RiskAssessment({ risk, className = "" }) {
             key={i}
             className="flex gap-2 rounded-lg border border-white/5 bg-white/[0.03] px-3 py-2 text-sm text-slate-300"
           >
-            <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-violet-400 shadow-[0_0_8px_#a78bfa]" />
+            <span className="mt-1.5 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-indigo-400 shadow-[0_0_8px_#a78bfa]" />
             {t}
           </li>
         ))}

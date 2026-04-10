@@ -76,9 +76,9 @@ export default function FinancialAnalysis({ financials, className = "", hideMini
   };
 
   return (
-    <section className={`glass-panel border-cyan-500/15 p-5 ${className}`}>
+    <section className={`glass-panel border-blue-500/15 p-5 ${className}`}>
       <div className="mb-4 flex items-center gap-2">
-        <BarChart3 className="h-5 w-5 text-cyan-400" />
+        <BarChart3 className="h-5 w-5 text-blue-400" />
         <h2 className="text-lg font-semibold text-white">Financial analysis</h2>
         <span className="ml-auto hidden rounded-full border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-slate-400 sm:inline">
           Margin {profitMargin}% · Growth {averageMonthlyGrowthRate}%
@@ -110,10 +110,10 @@ export default function FinancialAnalysis({ financials, className = "", hideMini
             {monthlyGrowth.map((g) => (
               <span
                 key={g.month}
-                className="rounded-full border border-cyan-500/25 bg-cyan-500/10 px-3 py-1 text-xs text-cyan-100/90"
+                className="rounded-full border border-blue-500/25 bg-blue-500/10 px-3 py-1 text-xs text-blue-100/90"
               >
                 <span className="text-slate-500">{g.month}</span>{" "}
-                <span className="font-mono font-semibold text-cyan-300">{g.growthRate}%</span>
+                <span className="font-mono font-semibold text-blue-300">{g.growthRate}%</span>
               </span>
             ))}
           </div>
@@ -125,8 +125,8 @@ export default function FinancialAnalysis({ financials, className = "", hideMini
 
 function MiniStat({ label, value, tone }) {
   const tones = {
-    cyan: "from-cyan-500/15 border-cyan-500/20",
-    violet: "from-violet-500/15 border-violet-500/20",
+    cyan: "from-blue-500/15 border-blue-500/20",
+    violet: "from-indigo-500/15 border-indigo-500/20",
     emerald: "from-emerald-500/15 border-emerald-500/20",
     blue: "from-blue-500/15 border-blue-500/20",
   };

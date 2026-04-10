@@ -24,8 +24,34 @@ const upload = multer({
 });
 
 app.get("/health", (_req, res) => {
-  res.json({ ok: true, service: "kpo-intelligence-api" });
+  res.json({ ok: true, service: "vertex-intelligence-api" });
 });
+
+/**
+ * Helper to get a properly configured AI client and model name.
+ * Supports Google Gemini (free tier via AI Studio), Groq (free), and OpenAI.
+ */
+function getAIClient() {
+  if (process.env.GEMINI_API_KEY) {
+    return {
+      client: new OpenAI({ apiKey: process.env.GEMINI_API_KEY, baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/" }),
+      model: "gemini-1.5-flash"
+    };
+  }
+  if (process.env.GROQ_API_KEY) {
+    return {
+      client: new OpenAI({ apiKey: process.env.GROQ_API_KEY, baseURL: "https://api.groq.com/openai/v1" }),
+      model: "llama-3.1-8b-instant"
+    };
+  }
+  if (process.env.OPENAI_API_KEY) {
+    return {
+      client: new OpenAI({ apiKey: process.env.OPENAI_API_KEY }),
+      model: process.env.OPENAI_MODEL || "gpt-4o-mini"
+    };
+  }
+  return null;
+}
 
 /**
  * POST /upload — multipart field "file" (CSV)
@@ -87,32 +113,32 @@ app.post("/analyze", (req, res) => {
 });
 
 /**
- * POST /insights — OpenAI: cost, revenue, risk (3–5 bullets)
+ * POST /insights — AI: cost, revenue, risk (3–5 bullets)
  */
 app.post("/insights", async (req, res) => {
   try {
-    const key = process.env.OPENAI_API_KEY?.trim();
-    if (!key) {
+    const aiConfig = getAIClient();
+    if (!aiConfig) {
       return res.json({
-        error: "OPENAI_API_KEY is not configured on the server.",
+        error: "No AI key configured. Set GEMINI_API_KEY, GROQ_API_KEY, or OPENAI_API_KEY in server/.env.",
         insights: [
-          "Configure OPENAI_API_KEY in server/.env to enable AI-generated insights.",
+          "Configure an AI API key (like GEMINI_API_KEY for a great free tier) to enable insights.",
           "Until then, use Risk Assessment and Financial Analysis tabs for manual review.",
         ],
       });
     }
+    const { client, model } = aiConfig;
     const payload = req.body?.insightContext || req.body?.summary || req.body;
     if (!payload || typeof payload !== "object") {
       return res.status(400).json({ error: "Send insightContext or summary from /analyze response." });
     }
-    const client = new OpenAI({ apiKey: key });
-    const sys = `You are a financial advisor for Micro and Small Enterprises (MSEs) working with KPO analysts.
+    const sys = `You are a financial advisor for Micro and Small Enterprises (MSEs) working with Vertex analysts.
 Given JSON financial and risk summary, respond with exactly 3 to 5 concise bullet points (one line each).
 Cover: cost optimization, revenue improvement, and risk warnings where relevant.
 Use plain language, no markdown headings, start each line with "• ".`;
 
     const completion = await client.chat.completions.create({
-      model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+      model: model,
       messages: [
         { role: "system", content: sys },
         { role: "user", content: JSON.stringify(payload) },
@@ -134,22 +160,22 @@ Use plain language, no markdown headings, start each line with "• ".`;
 });
 
 /**
- * POST /insights/simulate — OpenAI: Answer custom What-if based on simulated financials
+ * POST /insights/simulate — AI: Answer custom What-if based on simulated financials
  */
 app.post("/insights/simulate", async (req, res) => {
   try {
-    const key = process.env.OPENAI_API_KEY?.trim();
-    if (!key) {
+    const aiConfig = getAIClient();
+    if (!aiConfig) {
       return res.json({
-        error: "OPENAI_API_KEY is not configured.",
-        answer: "Please configure OPENAI_API_KEY in server/.env to use the AI simulator."
+        error: "No AI key configured.",
+        answer: "Please configure GEMINI_API_KEY or GROQ_API_KEY in server/.env to use the AI simulator."
       });
     }
+    const { client, model } = aiConfig;
     const { context, question } = req.body;
     if (!context || !question) {
       return res.status(400).json({ error: "Missing context or question." });
     }
-    const client = new OpenAI({ apiKey: key });
     const sys = `You are a financial risk advisor.
 
 Given:
@@ -177,7 +203,7 @@ User Question:
 "${question}"`;
 
     const completion = await client.chat.completions.create({
-      model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+      model: model,
       messages: [
         { role: "system", content: sys },
         { role: "user", content: userMsg },
@@ -195,7 +221,7 @@ User Question:
 
 if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, () => {
-    console.log(`KPO Intelligence API listening on http://localhost:${PORT}`);
+    console.log(`Vertex API listening on http://localhost:${PORT}`);
   });
 }
 

@@ -18,7 +18,7 @@ export default function KpiStrip({ financials, risk }) {
       label: "Total Revenue",
       value: `$${formatMoney(f.totalRevenue)}`,
       icon: Wallet,
-      accent: "from-cyan-500/20 to-transparent",
+      accent: "from-blue-500/20 to-transparent",
       glow: "shadow-[0_0_30px_-8px_rgba(34,211,238,0.35)]",
     },
     {
@@ -32,14 +32,14 @@ export default function KpiStrip({ financials, risk }) {
       label: "Profit margin",
       value: `${f.profitMargin}%`,
       icon: Percent,
-      accent: "from-violet-500/20 to-transparent",
+      accent: "from-indigo-500/20 to-transparent",
       glow: "shadow-[0_0_30px_-8px_rgba(167,139,250,0.25)]",
     },
     {
       label: "Avg. growth",
       value: `${f.averageMonthlyGrowthRate}%`,
       icon: growthPositive ? TrendingUp : TrendingDown,
-      accent: growthPositive ? "from-cyan-500/15" : "from-rose-500/15",
+      accent: growthPositive ? "from-blue-500/15" : "from-rose-500/15",
       glow: growthPositive
         ? "shadow-[0_0_24px_-8px_rgba(34,211,238,0.2)]"
         : "shadow-[0_0_24px_-8px_rgba(244,63,94,0.2)]",
@@ -66,7 +66,7 @@ export default function KpiStrip({ financials, risk }) {
       label: "Latest Cash",
       value: `$${formatMoney(f.latestCash)}`,
       icon: Coins,
-      accent: "from-cyan-500/15 to-transparent",
+      accent: "from-blue-500/15 to-transparent",
       glow: "shadow-[0_0_24px_-8px_rgba(34,211,238,0.2)]",
     },
     {
@@ -124,7 +124,7 @@ export default function KpiStrip({ financials, risk }) {
                   </p>
                 )}
               </div>
-              <Icon className="h-8 w-8 text-cyan-400/40 transition-transform duration-300 group-hover:scale-110 group-hover:text-cyan-300/70" />
+              <Icon className="h-8 w-8 text-blue-400/40 transition-transform duration-300 group-hover:scale-110 group-hover:text-blue-300/70" />
             </div>
           </div>
         );

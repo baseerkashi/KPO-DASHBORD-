@@ -106,7 +106,7 @@ export default function App() {
     loadInsights();
   }, [section, analysis, loadInsights]);
 
-  const title = "KPO Intelligence Dashboard";
+  const title = "Vertex";
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -114,11 +114,11 @@ export default function App() {
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         <TopBar
           title={title}
-          subtitle="Futuristic MSE analytics — financial signals, risk scoring, and AI intelligence."
+          subtitle="Enterprise financial intelligence and risk assessment platform."
           apiOnline={apiOnline}
           hasData={hasData}
         />
-        <div className="bg-cyber-grid flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="bg-enterprise-grid flex min-h-0 flex-1 flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6">
             {error && (
               <div
@@ -133,7 +133,7 @@ export default function App() {
               <FileUpload onFile={onFile} loading={loading.upload} disabled={loading.upload} />
               {uploadMeta && (
                 <p className="text-center text-xs text-slate-500">
-                  Loaded <span className="font-mono text-cyan-400/90">{uploadMeta.rowCount}</span> rows ·{" "}
+                  Loaded <span className="font-mono text-blue-400">{uploadMeta.rowCount}</span> rows ·{" "}
                   {uploadMeta.headers.join(", ")}
                 </p>
               )}
@@ -174,8 +174,8 @@ export default function App() {
               )}
 
               {!hasData && section !== "overview" && (
-                <div className="glass-panel rounded-2xl border border-dashed border-white/15 p-10 text-center text-slate-500">
-                  Upload a CSV on the <span className="text-cyan-400">Dashboard</span> to unlock this module.
+                <div className="glass-panel rounded-2xl border border-dashed border-slate-700/50 p-10 text-center text-slate-500">
+                  Upload a CSV on the <span className="text-blue-400">Dashboard</span> to unlock this module.
                 </div>
               )}
             </div>

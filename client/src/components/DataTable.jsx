@@ -14,7 +14,7 @@ export default function DataTable({ rows, className = "" }) {
           <thead>
             <tr className="border-b border-white/10 bg-white/[0.04]">
               {keys.map((k) => (
-                <th key={k} className="px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-cyan-200/80">
+                <th key={k} className="px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-blue-200/80">
                   {k}
                 </th>
               ))}
