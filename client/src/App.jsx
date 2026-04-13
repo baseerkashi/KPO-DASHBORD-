@@ -8,6 +8,7 @@ import FinancialAnalysis from "./components/FinancialAnalysis.jsx";
 import RiskAssessment from "./components/RiskAssessment.jsx";
 import AIInsights from "./components/AIInsights.jsx";
 import ScenarioSimulation from "./components/ScenarioSimulation.jsx";
+import Login from "./components/Login.jsx";
 
 const SECTIONS = [
   { id: "overview", label: "Dashboard" },
@@ -27,6 +28,39 @@ export default function App() {
   const [loading, setLoading] = useState({ upload: false, insights: false });
   const [error, setError] = useState(null);
   const [apiOnline, setApiOnline] = useState(true);
+
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return sessionStorage.getItem("vertex_kpo_auth") === "true";
+  });
+
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("app-theme") || "system";
+  });
+
+  useEffect(() => {
+    const root = window.document.documentElement;
+    root.classList.remove("light", "dark");
+    
+    if (theme === "system") {
+      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      root.classList.add(systemTheme);
+    } else {
+      root.classList.add(theme);
+    }
+    localStorage.setItem("app-theme", theme);
+  }, [theme]);
+
+  useEffect(() => {
+    if (theme !== "system") return;
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = () => {
+      const root = window.document.documentElement;
+      root.classList.remove("light", "dark");
+      root.classList.add(mediaQuery.matches ? "dark" : "light");
+    };
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, [theme]);
 
   const insightsAutoDoneRef = useRef(false);
 
@@ -108,21 +142,39 @@ export default function App() {
 
   const title = "Vertex";
 
+  const handleLogin = (status) => {
+    setIsAuthenticated(status);
+    if (status) {
+      sessionStorage.setItem("vertex_kpo_auth", "true");
+    }
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    sessionStorage.removeItem("vertex_kpo_auth");
+  };
+
+  if (!isAuthenticated) {
+    return <Login onLogin={handleLogin} theme={theme} />;
+  }
+
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar sections={SECTIONS} active={section} onSelect={setSection} />
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <Sidebar sections={SECTIONS} active={section} onSelect={setSection} onLogout={handleLogout} />
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-white dark:bg-black transition-colors">
         <TopBar
           title={title}
           subtitle="Enterprise financial intelligence and risk assessment platform."
           apiOnline={apiOnline}
           hasData={hasData}
+          theme={theme}
+          setTheme={setTheme}
         />
         <div className="bg-enterprise-grid flex min-h-0 flex-1 flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6">
             {error && (
               <div
-                className="mb-4 rounded-xl border border-rose-500/40 bg-rose-500/10 px-4 py-3 text-sm text-rose-100"
+                className="mb-4 rounded-xl border border-rose-500/40 bg-rose-50 text-rose-700 dark:bg-rose-500/10 px-4 py-3 text-sm dark:text-rose-100"
                 role="alert"
               >
                 {error}
@@ -133,7 +185,7 @@ export default function App() {
               <FileUpload onFile={onFile} loading={loading.upload} disabled={loading.upload} />
               {uploadMeta && (
                 <p className="text-center text-xs text-slate-500">
-                  Loaded <span className="font-mono text-blue-400">{uploadMeta.rowCount}</span> rows ·{" "}
+                  Loaded <span className="font-mono text-black dark:text-white">{uploadMeta.rowCount}</span> rows ·{" "}
                   {uploadMeta.headers.join(", ")}
                 </p>
               )}
@@ -174,8 +226,8 @@ export default function App() {
               )}
 
               {!hasData && section !== "overview" && (
-                <div className="glass-panel rounded-2xl border border-dashed border-slate-700/50 p-10 text-center text-slate-500">
-                  Upload a CSV on the <span className="text-blue-400">Dashboard</span> to unlock this module.
+                <div className="glass-panel rounded-2xl border border-dashed border-slate-300 dark:border-slate-700/50 p-10 text-center text-slate-500">
+                  Upload a CSV on the <span className="text-black dark:text-white">Dashboard</span> to unlock this module.
                 </div>
               )}
             </div>

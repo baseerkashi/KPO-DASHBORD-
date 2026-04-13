@@ -1,36 +1,102 @@
-import { Upload, Loader2 } from "lucide-react";
+import { useCallback } from "react";
+import { Upload, Loader2, FileSpreadsheet, Network, Landmark, Calculator } from "lucide-react";
+import { useDropzone } from "react-dropzone";
 
 export default function FileUpload({ onFile, loading, disabled }) {
+  const onDrop = useCallback(
+    (acceptedFiles) => {
+      if (acceptedFiles?.length > 0) {
+        onFile(acceptedFiles[0]);
+      }
+    },
+    [onFile]
+  );
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "text/csv": [".csv"],
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
+      "application/vnd.ms-excel": [".xls"],
+    },
+    multiple: false,
+    disabled,
+  });
+
+  const handleIntegrationClick = (provider) => {
+    alert(`${provider} direct integration is currently in closed beta. Please use CSV upload or contact enterprise support to enable this feature.`);
+  };
+
   return (
-    <div className="glass-panel-hover glass-panel relative overflow-hidden border-blue-500/25 p-5">
-      <div className="pointer-events-none absolute -right-20 -top-20 h-40 w-40 rounded-full bg-blue-500/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-16 -left-16 h-32 w-32 rounded-full bg-indigo-600/20 blur-3xl" />
-      <label className="relative flex cursor-pointer flex-col gap-2">
-        <span className="flex items-center gap-2 text-sm font-semibold text-white">
-          <Upload className="h-5 w-5 text-blue-400" />
-          Ingest financial CSV
-        </span>
-        <span className="text-xs text-slate-500">
-          Required: period + sales/revenue + expenses. Optional categories, workforce, liabilities.
-        </span>
-        <input
-          type="file"
-          accept=".csv,text/csv"
-          disabled={disabled}
-          className="mt-2 block w-full cursor-pointer rounded-lg border border-dashed border-blue-500/30 bg-slate-950/50 px-3 py-3 text-xs file:mr-3 file:rounded-md file:border-0 file:bg-blue-500/20 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-blue-100 hover:border-blue-400/50"
-          onChange={(e) => {
-            const f = e.target.files?.[0];
-            if (f) onFile(f);
-            e.target.value = "";
-          }}
-        />
-      </label>
-      {loading && (
-        <p className="mt-3 flex items-center gap-2 text-sm text-blue-300">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Parsing & analyzing…
-        </p>
-      )}
+    <div className="space-y-6">
+      <div className="glass-panel relative overflow-hidden border-black/10 dark:border-white/10 p-5 mt-4">
+        <div className="pointer-events-none absolute -right-20 -top-20 h-40 w-40 rounded-full bg-zinc-800 dark:bg-zinc-200 dark:text-black text-white/20 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-16 -left-16 h-32 w-32 rounded-full bg-black dark:bg-white dark:text-black text-white/20 blur-3xl" />
+        
+        <div
+          {...getRootProps()}
+          className={`relative flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-8 transition-colors ${
+            isDragActive
+              ? "border-black bg-black/5 dark:border-white dark:bg-white/10"
+              : disabled 
+              ? "border-slate-200 bg-slate-50 dark:border-white/5 dark:bg-black/20 opacity-50 cursor-not-allowed"
+              : "border-black/20 bg-white/50 hover:bg-white hover:border-black/40 dark:border-white/20 dark:bg-slate-950/50 dark:hover:bg-slate-900/80 dark:hover:border-white/40"
+          }`}
+        >
+          <input {...getInputProps()} />
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-zinc-100 dark:bg-white/10">
+            {loading ? (
+              <Loader2 className="h-6 w-6 animate-spin text-slate-800 dark:text-white" />
+            ) : isDragActive ? (
+              <Upload className="h-6 w-6 text-black dark:text-white animate-bounce" />
+            ) : (
+              <FileSpreadsheet className="h-6 w-6 text-slate-700 dark:text-slate-300" />
+            )}
+          </div>
+          
+          <div className="text-center">
+            <p className="text-sm font-semibold text-slate-900 dark:text-white">
+              {isDragActive ? "Drop the file here..." : "Drag & drop a financial sheet here"}
+            </p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Supports .CSV and .XLSX files.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800"></div>
+        <span className="text-xs font-medium text-slate-500 uppercase tracking-widest">Or connect directly</span>
+        <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800"></div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <button 
+          onClick={() => handleIntegrationClick('Plaid')}
+          disabled={disabled || loading}
+          className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 p-4 text-sm font-medium text-slate-700 dark:text-slate-300 transition-all hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Landmark className="h-4 w-4" />
+          Plaid Bank Sync
+        </button>
+        <button 
+          onClick={() => handleIntegrationClick('QuickBooks')}
+          disabled={disabled || loading}
+          className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 p-4 text-sm font-medium text-slate-700 dark:text-slate-300 transition-all hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Calculator className="h-4 w-4" />
+          QuickBooks
+        </button>
+        <button 
+          onClick={() => handleIntegrationClick('Xero')}
+          disabled={disabled || loading}
+          className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 p-4 text-sm font-medium text-slate-700 dark:text-slate-300 transition-all hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Network className="h-4 w-4" />
+          Xero Integration
+        </button>
+      </div>
     </div>
   );
 }

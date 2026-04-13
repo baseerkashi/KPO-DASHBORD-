@@ -2,20 +2,20 @@ import { Sparkles, RefreshCw } from "lucide-react";
 
 export default function AIInsights({ insights, loading, error, onRefresh, className = "" }) {
   return (
-    <section className={`glass-panel border-fuchsia-500/20 p-5 ${className}`}>
+    <section className={`glass-panel border-black/10 dark:border-white/10 dark:border-white/10 p-5 ${className}`}>
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-fuchsia-400" />
+          <Sparkles className="h-5 w-5 text-black dark:text-white dark:text-zinc-400" />
           <div>
-            <h2 className="text-lg font-semibold text-white">AI insights</h2>
-            <p className="text-xs text-slate-500">OpenAI via server · key in server/.env only</p>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">AI insights</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-500">OpenAI via server · key in server/.env only</p>
           </div>
         </div>
         <button
           type="button"
           onClick={onRefresh}
           disabled={loading}
-          className="inline-flex items-center gap-2 rounded-xl border border-blue-500/40 bg-blue-500/10 px-4 py-2 text-sm font-semibold text-blue-200 transition-all hover:border-blue-400/60 hover:bg-blue-500/20 hover:shadow-[0_0_20px_-4px_rgba(34,211,238,0.4)] disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-xl border border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100 transition-all hover:border-black/30 dark:hover:border-white/30 hover:bg-zinc-200 dark:hover:bg-white/10 hover:shadow-md disabled:opacity-50"
         >
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
           {loading ? "Thinking…" : "Refresh"}
@@ -36,9 +36,9 @@ export default function AIInsights({ insights, loading, error, onRefresh, classN
           {insights.map((line, i) => (
             <li
               key={i}
-              className="group relative overflow-hidden rounded-xl border border-white/10 bg-gradient-to-r from-fuchsia-500/10 via-transparent to-blue-500/10 p-4 text-sm leading-relaxed text-slate-200 transition-all hover:border-blue-400/30 hover:shadow-[0_0_24px_-8px_rgba(168,85,247,0.35)]"
+              className="group relative overflow-hidden rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm leading-relaxed text-slate-800 whitespace-pre-line transition-all hover:border-black/10 dark:border-white/10 hover:shadow-md dark:bg-transparent dark:bg-gradient-to-r dark:from-zinc-500/10 dark:via-transparent dark:to-zinc-500/10 dark:text-slate-200 dark:hover:border-white/30"
             >
-              <span className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-blue-400 to-indigo-500 opacity-80" />
+              <span className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-zinc-500 to-zinc-600 dark:from-zinc-400 dark:to-zinc-500 opacity-80" />
               <span className="pl-2">{line}</span>
             </li>
           ))}

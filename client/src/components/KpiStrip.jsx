@@ -18,7 +18,7 @@ export default function KpiStrip({ financials, risk }) {
       label: "Total Revenue",
       value: `$${formatMoney(f.totalRevenue)}`,
       icon: Wallet,
-      accent: "from-blue-500/20 to-transparent",
+      accent: "from-zinc-500/20 to-transparent",
       glow: "shadow-[0_0_30px_-8px_rgba(34,211,238,0.35)]",
     },
     {
@@ -32,14 +32,14 @@ export default function KpiStrip({ financials, risk }) {
       label: "Profit margin",
       value: `${f.profitMargin}%`,
       icon: Percent,
-      accent: "from-indigo-500/20 to-transparent",
-      glow: "shadow-[0_0_30px_-8px_rgba(167,139,250,0.25)]",
+      accent: "from-zinc-500/20 to-transparent",
+      glow: "shadow-[0_0_30px_-8px_rgba(0,0,0,0.1)] dark:shadow-[0_0_30px_-8px_rgba(255,255,255,0.15)]",
     },
     {
       label: "Avg. growth",
       value: `${f.averageMonthlyGrowthRate}%`,
       icon: growthPositive ? TrendingUp : TrendingDown,
-      accent: growthPositive ? "from-blue-500/15" : "from-rose-500/15",
+      accent: growthPositive ? "from-zinc-500/15" : "from-rose-500/15",
       glow: growthPositive
         ? "shadow-[0_0_24px_-8px_rgba(34,211,238,0.2)]"
         : "shadow-[0_0_24px_-8px_rgba(244,63,94,0.2)]",
@@ -49,7 +49,7 @@ export default function KpiStrip({ financials, risk }) {
       value: risk ? `${risk.riskScore}` : "—",
       sub: risk ? risk.riskLevel : null,
       icon: Gauge,
-      accent: "from-blue-500/20 to-transparent",
+      accent: "from-zinc-500/20 to-transparent",
       glow:
         risk?.riskLevel === "High"
           ? "shadow-[0_0_28px_-6px_rgba(248,113,113,0.35)]"
@@ -59,14 +59,14 @@ export default function KpiStrip({ financials, risk }) {
       label: "Total expenses",
       value: `$${formatMoney(f.totalExpenses)}`,
       icon: PieChart,
-      accent: "from-indigo-500/15 to-transparent",
-      glow: "shadow-[0_0_24px_-8px_rgba(99,102,241,0.2)]",
+      accent: "from-zinc-500/15 to-transparent",
+      glow: "shadow-md dark:shadow-[0_0_24px_-8px_rgba(255,255,255,0.1)]",
     },
     {
       label: "Latest Cash",
       value: `$${formatMoney(f.latestCash)}`,
       icon: Coins,
-      accent: "from-blue-500/15 to-transparent",
+      accent: "from-zinc-500/15 to-transparent",
       glow: "shadow-[0_0_24px_-8px_rgba(34,211,238,0.2)]",
     },
     {
@@ -101,15 +101,15 @@ export default function KpiStrip({ financials, risk }) {
         return (
           <div
             key={item.label}
-            className={`${cardBase} ${item.glow} border-white/10 hover:-translate-y-0.5`}
+            className={`${cardBase} ${item.glow} border-slate-200 dark:border-white/10 hover:-translate-y-0.5`}
           >
             <div
               className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${item.accent} to-transparent opacity-80`}
             />
             <div className="relative flex items-start justify-between gap-2">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">{item.label}</p>
-                <p className="mt-1 font-mono text-lg font-bold tabular-nums text-white md:text-xl">{item.value}</p>
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">{item.label}</p>
+                <p className="mt-1 font-mono text-lg font-bold tabular-nums text-slate-900 dark:text-white md:text-xl">{item.value}</p>
                 {item.sub && (
                   <p
                     className={`mt-1 text-xs font-semibold ${
@@ -124,7 +124,7 @@ export default function KpiStrip({ financials, risk }) {
                   </p>
                 )}
               </div>
-              <Icon className="h-8 w-8 text-blue-400/40 transition-transform duration-300 group-hover:scale-110 group-hover:text-blue-300/70" />
+              <Icon className="h-8 w-8 text-zinc-700 dark:text-zinc-300/40 transition-transform duration-300 group-hover:scale-110 group-hover:text-black dark:text-white/70 dark:text-zinc-400/40 dark:group-hover:text-zinc-300/70" />
             </div>
           </div>
         );

@@ -76,11 +76,11 @@ export default function FinancialAnalysis({ financials, className = "", hideMini
   };
 
   return (
-    <section className={`glass-panel border-blue-500/15 p-5 ${className}`}>
+    <section className={`glass-panel border-slate-200 dark:border-white/10 p-5 ${className}`}>
       <div className="mb-4 flex items-center gap-2">
-        <BarChart3 className="h-5 w-5 text-blue-400" />
-        <h2 className="text-lg font-semibold text-white">Financial analysis</h2>
-        <span className="ml-auto hidden rounded-full border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-[10px] text-slate-400 sm:inline">
+        <BarChart3 className="h-5 w-5 text-black dark:text-white" />
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Financial analysis</h2>
+        <span className="ml-auto hidden rounded-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-2 py-0.5 font-mono text-[10px] text-slate-600 dark:text-slate-400 sm:inline">
           Margin {profitMargin}% · Growth {averageMonthlyGrowthRate}%
         </span>
       </div>
@@ -90,30 +90,30 @@ export default function FinancialAnalysis({ financials, className = "", hideMini
           <MiniStat label="Revenue" value={fmt(totalRevenue)} tone="cyan" />
           <MiniStat label="Expenses" value={fmt(totalExpenses)} tone="violet" />
           <MiniStat label="Net profit" value={fmt(netProfit)} tone="emerald" />
-          <MiniStat label="Avg. MoM" value={`${averageMonthlyGrowthRate}%`} tone="blue" />
+          <MiniStat label="Avg. MoM" value={`${averageMonthlyGrowthRate}%`} tone="zinc" />
         </div>
       )}
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="glass-panel-hover min-h-[280px] rounded-xl border border-white/5 p-3">
+        <div className="glass-panel-hover min-h-[280px] rounded-xl border border-slate-200 dark:border-white/5 bg-white/50 dark:bg-transparent p-3">
           <Bar data={barData} options={barOptions} />
         </div>
-        <div className="glass-panel-hover min-h-[280px] rounded-xl border border-white/5 p-3">
+        <div className="glass-panel-hover min-h-[280px] rounded-xl border border-slate-200 dark:border-white/5 bg-white/50 dark:bg-transparent p-3">
           <Pie data={pieData} options={pieOptions} />
         </div>
       </div>
 
       {monthlyGrowth.length > 0 && (
         <div className="mt-5">
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">Month-over-month growth</h3>
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400">Month-over-month growth</h3>
           <div className="flex flex-wrap gap-2">
             {monthlyGrowth.map((g) => (
               <span
                 key={g.month}
-                className="rounded-full border border-blue-500/25 bg-blue-500/10 px-3 py-1 text-xs text-blue-100/90"
+                className="rounded-full border border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-3 py-1 text-xs text-black dark:text-zinc-300"
               >
-                <span className="text-slate-500">{g.month}</span>{" "}
-                <span className="font-mono font-semibold text-blue-300">{g.growthRate}%</span>
+                <span className="text-slate-600 dark:text-slate-500">{g.month}</span>{" "}
+                <span className="font-mono font-semibold text-black dark:text-white">{g.growthRate}%</span>
               </span>
             ))}
           </div>
@@ -125,15 +125,15 @@ export default function FinancialAnalysis({ financials, className = "", hideMini
 
 function MiniStat({ label, value, tone }) {
   const tones = {
-    cyan: "from-blue-500/15 border-blue-500/20",
-    violet: "from-indigo-500/15 border-indigo-500/20",
+    cyan: "from-zinc-500/15 border-black/10 dark:border-white/10",
+    violet: "from-zinc-500/15 border-black/10 dark:border-white/10",
     emerald: "from-emerald-500/15 border-emerald-500/20",
-    blue: "from-blue-500/15 border-blue-500/20",
+    zinc: "from-zinc-500/15 border-black/10 dark:border-white/10",
   };
   return (
-    <div className={`rounded-xl border bg-gradient-to-br ${tones[tone]} p-3`}>
-      <p className="text-[10px] font-medium uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="mt-0.5 font-mono text-base font-bold text-white">{value}</p>
+    <div className={`rounded-xl border bg-gradient-to-br ${tones[tone]} p-3 bg-white/50 dark:bg-transparent`}>
+      <p className="text-[10px] font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">{label}</p>
+      <p className="mt-0.5 font-mono text-base font-bold text-slate-900 dark:text-white">{value}</p>
     </div>
   );
 }

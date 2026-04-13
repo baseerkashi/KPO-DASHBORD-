@@ -10,9 +10,7 @@ export const api = axios.create({
 export async function uploadCsv(file) {
   const form = new FormData();
   form.append("file", file);
-  const { data } = await api.post("/upload", form, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  const { data } = await api.post("/upload", form);
   return data;
 }
 

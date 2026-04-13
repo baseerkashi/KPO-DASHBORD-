@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import multer from "multer";
 import { parse } from "csv-parse/sync";
+import * as xlsx from "xlsx";
 import OpenAI from "openai";
 import {
   detectColumns,
@@ -35,7 +36,7 @@ function getAIClient() {
   if (process.env.GEMINI_API_KEY) {
     return {
       client: new OpenAI({ apiKey: process.env.GEMINI_API_KEY, baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/" }),
-      model: "gemini-1.5-flash"
+      model: "gemini-2.5-flash"
     };
   }
   if (process.env.GROQ_API_KEY) {
@@ -54,20 +55,37 @@ function getAIClient() {
 }
 
 /**
- * POST /upload — multipart field "file" (CSV)
+ * POST /upload — multipart field "file" (CSV or XLSX)
  */
 app.post("/upload", upload.single("file"), (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded. Use field name 'file'." });
     }
-    const text = req.file.buffer.toString("utf8");
+    
+    let text = "";
+    
+    // Check if file is excel
+    const isExcel = req.file.originalname.match(/\.(xlsx|xls)$/i) || 
+                   req.file.mimetype.includes("spreadsheetml") || 
+                   req.file.mimetype.includes("excel");
+                   
+    if (isExcel) {
+      const workbook = xlsx.read(req.file.buffer, { type: "buffer" });
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      text = xlsx.utils.sheet_to_csv(sheet);
+    } else {
+      text = req.file.buffer.toString("utf8");
+    }
+
     const records = parse(text, {
       columns: true,
       skip_empty_lines: true,
       trim: true,
       relax_column_count: true,
     });
+    
     if (!records.length) {
       return res.status(400).json({ error: "CSV is empty or could not be parsed." });
     }
@@ -132,10 +150,15 @@ app.post("/insights", async (req, res) => {
     if (!payload || typeof payload !== "object") {
       return res.status(400).json({ error: "Send insightContext or summary from /analyze response." });
     }
-    const sys = `You are a financial advisor for Micro and Small Enterprises (MSEs) working with Vertex analysts.
-Given JSON financial and risk summary, respond with exactly 3 to 5 concise bullet points (one line each).
-Cover: cost optimization, revenue improvement, and risk warnings where relevant.
-Use plain language, no markdown headings, start each line with "• ".`;
+    const sys = `You are a ruthless, Wall Street-caliber Turnaround Executive and Strategic Financial Enforcer.
+Analyze the provided JSON business financials and risk assessment. DO NOT ask politely. DO NOT give vague suggestions. Command the business owner on exactly what they MUST do to survive and grow.
+
+Requirements:
+1. Generate 7 to 10 rapid-fire, brutal, highly detailed strategic commands.
+2. Tell them exactly where to CUT costs, where to FORCE revenue, and how to SURVIVE their cash runways. Use direct, commanding verbs (e.g., "Cut X immediately", "Deploy capital into Y", "Liquidate Z"). 
+3. Do not simply restate numbers. Give them a hard-hitting action plan based on those numbers. Be harsh if the risk is high.
+4. Each command MUST be a detailed paragraph (3-4 sentences long). 
+5. Separate each command distinctly by strict use of a "---" separator between them on its own line. Do not use bullets or numbers.`;
 
     const completion = await client.chat.completions.create({
       model: model,
@@ -143,15 +166,15 @@ Use plain language, no markdown headings, start each line with "• ".`;
         { role: "system", content: sys },
         { role: "user", content: JSON.stringify(payload) },
       ],
-      max_tokens: 500,
-      temperature: 0.4,
+      max_tokens: 2500,
+      temperature: 0.7,
     });
     const text = completion.choices[0]?.message?.content?.trim() || "";
     const lines = text
-      .split("\n")
-      .map((l) => l.replace(/^[-•*\d.)]+\s*/, "").trim())
-      .filter(Boolean)
-      .slice(0, 5);
+      .split(/\n?---\n?/)
+      .map((l) => l.trim().replace(/^[-•*\d.)]+\s*/, ""))
+      .filter((l) => l.length > 20)
+      .slice(0, 10);
     return res.json({ insights: lines.length ? lines : [text] });
   } catch (e) {
     console.error(e);
@@ -176,18 +199,19 @@ app.post("/insights/simulate", async (req, res) => {
     if (!context || !question) {
       return res.status(400).json({ error: "Missing context or question." });
     }
-    const sys = `You are a financial risk advisor.
+    const sys = `You are a ruthless and highly authoritative Financial Turnaround Enforcer.
 
 Given:
 - Current financial state
 - Simulated changes
 
-1. Predict outcome (short term + medium term)
-2. Highlight risks
-3. Suggest better alternative (if any)
+You MUST take charge. Do not give soft "suggestions" or ask them to "consider" options.
+1. Forcefully predict the outcome (short term + medium term).
+2. Highlight exactly why their plan will fail or succeed. 
+3. Tell them EXACTLY what to do instead. Use commanding verbs ("Cut costs by...", "Execute this immediately...", "Halt this expenditure...").
 
-Keep response concise and actionable.
-Must include a confidence tone (e.g., 'High likelihood', 'Moderate risk', 'Low confidence due to limited data').`;
+Keep the response aggressive, concise, and highly actionable.
+Must include a blunt confidence tone (e.g., 'Failure is imminent', 'High likelihood of success', 'This is a dangerous gamble').`;
 
     const userMsg = `Current State:
 Revenue: $${context.baseline.monthlyRevenue}

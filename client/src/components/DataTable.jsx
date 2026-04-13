@@ -4,17 +4,17 @@ export default function DataTable({ rows, className = "" }) {
   if (!rows?.length) return null;
   const keys = Object.keys(rows[0]);
   return (
-    <section className={`glass-panel border-white/10 p-5 ${className}`}>
+    <section className={`glass-panel border-slate-200 dark:border-white/10 p-5 ${className}`}>
       <div className="mb-4 flex items-center gap-2">
-        <Table2 className="h-5 w-5 text-slate-400" />
-        <h2 className="text-lg font-semibold text-white">Structured dataset</h2>
+        <Table2 className="h-5 w-5 text-slate-500 dark:text-slate-400" />
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Structured dataset</h2>
       </div>
-      <div className="overflow-x-auto rounded-xl border border-white/10">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-white/10">
         <table className="w-full min-w-[520px] text-left text-sm">
           <thead>
-            <tr className="border-b border-white/10 bg-white/[0.04]">
+            <tr className="border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/[0.04]">
               {keys.map((k) => (
-                <th key={k} className="px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-blue-200/80">
+                <th key={k} className="px-3 py-2.5 text-xs font-semibold uppercase tracking-wider text-black dark:text-white/80">
                   {k}
                 </th>
               ))}
@@ -22,9 +22,9 @@ export default function DataTable({ rows, className = "" }) {
           </thead>
           <tbody>
             {rows.map((r, i) => (
-              <tr key={i} className="border-b border-white/5 transition-colors hover:bg-white/[0.04]">
+              <tr key={i} className="border-b border-slate-100 dark:border-white/5 transition-colors hover:bg-slate-50 dark:hover:bg-white/[0.04]">
                 {keys.map((k) => (
-                  <td key={k} className="max-w-[220px] truncate px-3 py-2 font-mono text-xs text-slate-300">
+                  <td key={k} className="max-w-[220px] truncate px-3 py-2 font-mono text-xs text-slate-600 dark:text-slate-300">
                     {k === "expenseBreakdown" && r[k] && typeof r[k] === "object"
                       ? JSON.stringify(r[k])
                       : r[k] === null || r[k] === undefined
