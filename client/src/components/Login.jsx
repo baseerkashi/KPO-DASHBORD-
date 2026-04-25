@@ -106,7 +106,9 @@ export default function Login({ theme }) {
           </button>
         </form>
 
-
+        <p className="mt-6 text-center text-[11px] text-slate-400 dark:text-slate-500">
+          Default credentials: <span className="font-mono text-slate-600 dark:text-slate-300">ben / 1234</span>
+        </p>
       </div>
     </div>
   );
