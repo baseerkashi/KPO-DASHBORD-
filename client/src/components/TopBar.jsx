@@ -22,7 +22,7 @@ export default function TopBar({ title, subtitle, apiOnline, hasData, theme, set
           <Wifi className="h-3.5 w-3.5" aria-hidden />
           {apiOnline ? "API online" : "Check API"}
         </div>
-        <div className="hidden items-center gap-2 rounded-md border border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-2.5 py-1 text-xs text-zinc-900 dark:text-zinc-100 dark:bg-zinc-800 dark:bg-zinc-200 dark:text-black text-white/10 dark:text-white sm:flex">
+        <div className="hidden items-center gap-2 rounded-md border border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-zinc-800 px-2.5 py-1 text-xs text-zinc-900 dark:text-zinc-100 sm:flex">
           <Activity className="h-3.5 w-3.5 text-zinc-700 dark:text-zinc-300 dark:text-white" aria-hidden />
           {hasData ? "Dataset loaded" : "Awaiting CSV"}
         </div>

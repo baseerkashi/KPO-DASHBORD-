@@ -5,6 +5,10 @@ export default function ScenarioSimulation({ financials, risk, rowsCount }) {
   const [revAdj, setRevAdj] = useState(0); // percentage
   const [expAdj, setExpAdj] = useState(0); // percentage
   const [investment, setInvestment] = useState(0); // absolute $
+  const [headcountChange, setHeadcountChange] = useState(0); // absolute number
+  const [marketingBoost, setMarketingBoost] = useState(0); // absolute $ / month
+  const [customerChurn, setCustomerChurn] = useState(0); // percentage
+  const [newLoan, setNewLoan] = useState(0); // absolute $
   const [prompt, setPrompt] = useState("");
   const [aiResponse, setAiResponse] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -29,12 +33,22 @@ export default function ScenarioSimulation({ financials, risk, rowsCount }) {
     const currentRunway = financials.runway;
 
     // Projected
-    const simAvgRev = avgRev * (1 + revAdj / 100);
-    const simAvgExp = avgExp * (1 + expAdj / 100);
+    const assumedSalaryPerHead = 5000; // $5k avg monthly salary assumption
+    const assumedROAS = 2.0; // Assume 2.0x Return on Ad Spend for new marketing
+    
+    const monthlyInterestRate = 0.01; // Assume 12% APR (1% per month) for new debt
+    
+    const marketingRevLift = marketingBoost * assumedROAS;
+    const headcountExp = headcountChange * assumedSalaryPerHead;
+    const churnLoss = avgRev * (customerChurn / 100);
+    const debtService = newLoan * monthlyInterestRate;
+
+    const simAvgRev = (avgRev * (1 + revAdj / 100)) + marketingRevLift - churnLoss;
+    const simAvgExp = (avgExp * (1 + expAdj / 100)) + headcountExp + marketingBoost + debtService;
     const simMonthlyProfit = simAvgRev - simAvgExp;
     const simBurnRate = simAvgExp > simAvgRev ? simAvgExp - simAvgRev : 0;
     
-    const simCash = (financials.latestCash || 0) + Number(investment);
+    const simCash = (financials.latestCash || 0) + Number(investment) + Number(newLoan);
     const simRunway = simBurnRate > 0 ? simCash / simBurnRate : null;
 
     // Decision Impact Tag & Time to failure
@@ -75,7 +89,7 @@ export default function ScenarioSimulation({ financials, risk, rowsCount }) {
       timeToFailure,
       impactTag
     };
-  }, [financials, rowsCount, revAdj, expAdj, investment]);
+  }, [financials, rowsCount, revAdj, expAdj, investment, headcountChange, marketingBoost, customerChurn, newLoan]);
 
   const handleAskAI = async () => {
     if (!prompt.trim() || cooldown > 0 || loading) return;
@@ -95,7 +109,11 @@ export default function ScenarioSimulation({ financials, risk, rowsCount }) {
           adjustments: {
             revenueChangePct: revAdj,
             expenseChangePct: expAdj,
-            newInvestment: investment
+            newInvestment: investment,
+            headcountChange: headcountChange,
+            marketingBoost: marketingBoost,
+            customerChurnPct: customerChurn,
+            newLoan: newLoan
           },
           projected: {
             simAvgRev: simParams.simAvgRev,
@@ -129,12 +147,15 @@ export default function ScenarioSimulation({ financials, risk, rowsCount }) {
           <div className="flex flex-wrap gap-2 mb-4">
             <button onClick={() => setExpAdj(-10)} className="px-3 py-1 text-xs rounded border border-rose-500/30 bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors">Reduce Costs 10%</button>
             <button onClick={() => setRevAdj(20)} className="px-3 py-1 text-xs rounded border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors">Increase Revenue 20%</button>
-            <button onClick={() => setInvestment((p) => p + 50000)} className="px-3 py-1 text-xs rounded border border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-white/5 text-black dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-white/10 transition-colors">Add $50K Investment</button>
-            <button onClick={() => { setRevAdj(0); setExpAdj(0); setInvestment(0); }} className="px-3 py-1 text-xs rounded border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors ml-auto">Reset</button>
+            <button onClick={() => setHeadcountChange(5)} className="px-3 py-1 text-xs rounded border border-indigo-500/30 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors">Hire 5 Team</button>
+            <button onClick={() => setMarketingBoost(10000)} className="px-3 py-1 text-xs rounded border border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors">Boost Ads $10k</button>
+            <button onClick={() => setCustomerChurn(10)} className="px-3 py-1 text-xs rounded border border-orange-500/30 bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-500/20 transition-colors">10% Churn</button>
+            <button onClick={() => setNewLoan(100000)} className="px-3 py-1 text-xs rounded border border-cyan-500/30 bg-cyan-50 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-500/20 transition-colors">Take $100k Loan</button>
+            <button onClick={() => { setRevAdj(0); setExpAdj(0); setInvestment(0); setHeadcountChange(0); setMarketingBoost(0); setCustomerChurn(0); setNewLoan(0); }} className="px-3 py-1 text-xs rounded border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors ml-auto">Reset</button>
           </div>
         </div>
 
-        <div className="space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <label className="font-medium text-emerald-600 dark:text-emerald-400">Revenue Adjustment</label>
@@ -161,13 +182,61 @@ export default function ScenarioSimulation({ financials, risk, rowsCount }) {
 
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <label className="font-medium text-black dark:text-white dark:text-zinc-400">New Investment ($)</label>
+              <label className="font-medium text-indigo-600 dark:text-indigo-400">Headcount Change</label>
+              <span className="text-indigo-700 dark:text-indigo-100">{headcountChange > 0 ? "+" : ""}{headcountChange} people</span>
+            </div>
+            <input 
+              type="range" min="-50" max="100" value={headcountChange} 
+              onChange={(e) => setHeadcountChange(Number(e.target.value))}
+              className="w-full accent-indigo-500 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <label className="font-medium text-amber-600 dark:text-amber-400">Marketing Boost/mo</label>
+              <span className="text-amber-700 dark:text-amber-100">${Number(marketingBoost).toLocaleString()}</span>
+            </div>
+            <input 
+              type="range" min="0" max="100000" step="1000" value={marketingBoost} 
+              onChange={(e) => setMarketingBoost(Number(e.target.value))}
+              className="w-full accent-amber-500 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <label className="font-medium text-orange-600 dark:text-orange-400">Customer Churn (%)</label>
+              <span className="text-orange-700 dark:text-orange-100">{customerChurn}%</span>
+            </div>
+            <input 
+              type="range" min="0" max="50" value={customerChurn} 
+              onChange={(e) => setCustomerChurn(Number(e.target.value))}
+              className="w-full accent-orange-500 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <label className="font-medium text-cyan-600 dark:text-cyan-400">New Debt Facility ($)</label>
+              <span className="text-cyan-700 dark:text-cyan-100">${Number(newLoan).toLocaleString()}</span>
+            </div>
+            <input 
+              type="range" min="0" max="1000000" step="10000" value={newLoan} 
+              onChange={(e) => setNewLoan(Number(e.target.value))}
+              className="w-full accent-cyan-500 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
+            />
+          </div>
+
+          <div className="space-y-2 md:col-span-2">
+            <div className="flex justify-between text-sm">
+              <label className="font-medium text-black dark:text-zinc-400">Capital Injection (Equity $)</label>
               <span className="text-black dark:text-zinc-300">${Number(investment).toLocaleString()}</span>
             </div>
             <input 
               type="range" min="0" max="1000000" step="5000" value={investment} 
               onChange={(e) => setInvestment(Number(e.target.value))}
-              className="w-full accent-black dark:accent-white dark:accent-white h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
+              className="w-full accent-black dark:accent-white h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
             />
           </div>
         </div>
@@ -195,12 +264,39 @@ export default function ScenarioSimulation({ financials, risk, rowsCount }) {
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-white/5">
               <tr className="bg-white dark:bg-slate-900/30">
+                <td className="px-4 py-3 text-slate-700 dark:text-slate-300">Avg Revenue/mo</td>
+                <td className="px-4 py-3 border-l border-slate-200 dark:border-white/5 font-mono text-slate-700 dark:text-slate-200">
+                  ${Math.round(simParams.avgRev).toLocaleString()}
+                </td>
+                <td className={`px-4 py-3 border-l border-slate-200 dark:border-white/5 font-mono font-bold ${simParams.simAvgRev > simParams.avgRev ? 'text-emerald-500 dark:text-emerald-400' : simParams.simAvgRev < simParams.avgRev ? 'text-rose-500 dark:text-rose-400' : 'text-black dark:text-white dark:text-zinc-300'}`}>
+                  ${Math.round(simParams.simAvgRev).toLocaleString()}
+                </td>
+              </tr>
+              <tr className="bg-white dark:bg-slate-900/30">
+                <td className="px-4 py-3 text-slate-700 dark:text-slate-300">Avg Expenses/mo</td>
+                <td className="px-4 py-3 border-l border-slate-200 dark:border-white/5 font-mono text-slate-700 dark:text-slate-200">
+                  ${Math.round(simParams.avgExp).toLocaleString()}
+                </td>
+                <td className={`px-4 py-3 border-l border-slate-200 dark:border-white/5 font-mono font-bold ${simParams.simAvgExp < simParams.avgExp ? 'text-emerald-500 dark:text-emerald-400' : simParams.simAvgExp > simParams.avgExp ? 'text-rose-500 dark:text-rose-400' : 'text-black dark:text-white dark:text-zinc-300'}`}>
+                  ${Math.round(simParams.simAvgExp).toLocaleString()}
+                </td>
+              </tr>
+              <tr className="bg-white dark:bg-slate-900/30">
                 <td className="px-4 py-3 text-slate-700 dark:text-slate-300">Avg Profit/mo</td>
                 <td className={`px-4 py-3 border-l border-slate-200 dark:border-white/5 font-mono ${simParams.avgRev - simParams.avgExp >= 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
                   ${Math.round(simParams.avgRev - simParams.avgExp).toLocaleString()}
                 </td>
                 <td className={`px-4 py-3 border-l border-slate-200 dark:border-white/5 font-mono font-bold ${simParams.simMonthlyProfit >= 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
                   ${Math.round(simParams.simMonthlyProfit).toLocaleString()}
+                </td>
+              </tr>
+              <tr className="bg-white dark:bg-slate-900/30">
+                <td className="px-4 py-3 text-slate-700 dark:text-slate-300">Cash Balance</td>
+                <td className="px-4 py-3 border-l border-slate-200 dark:border-white/5 font-mono text-slate-700 dark:text-slate-200">
+                  ${Math.round(financials.latestCash || 0).toLocaleString()}
+                </td>
+                <td className={`px-4 py-3 border-l border-slate-200 dark:border-white/5 font-mono font-bold ${simParams.simCash > (financials.latestCash || 0) ? 'text-emerald-500 dark:text-emerald-400' : simParams.simCash < (financials.latestCash || 0) ? 'text-rose-500 dark:text-rose-400' : 'text-black dark:text-white dark:text-zinc-300'}`}>
+                  ${Math.round(simParams.simCash).toLocaleString()}
                 </td>
               </tr>
               <tr className="bg-white dark:bg-slate-900/30">

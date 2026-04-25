@@ -23,9 +23,7 @@ export default function FileUpload({ onFile, loading, disabled }) {
     disabled,
   });
 
-  const handleIntegrationClick = (provider) => {
-    alert(`${provider} direct integration is currently in closed beta. Please use CSV upload or contact enterprise support to enable this feature.`);
-  };
+
 
   return (
     <div className="space-y-6">
@@ -56,47 +54,15 @@ export default function FileUpload({ onFile, loading, disabled }) {
           
           <div className="text-center">
             <p className="text-sm font-semibold text-slate-900 dark:text-white">
-              {isDragActive ? "Drop the file here..." : "Drag & drop a financial sheet here"}
+              {isDragActive ? "Drop the file here..." : "Drop any financial spreadsheet here"}
             </p>
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Supports .CSV and .XLSX files.
+              CSV, XLSX, or XLS — messy data is fine, our AI will auto-detect columns
             </p>
           </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800"></div>
-        <span className="text-xs font-medium text-slate-500 uppercase tracking-widest">Or connect directly</span>
-        <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800"></div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <button 
-          onClick={() => handleIntegrationClick('Plaid')}
-          disabled={disabled || loading}
-          className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 p-4 text-sm font-medium text-slate-700 dark:text-slate-300 transition-all hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Landmark className="h-4 w-4" />
-          Plaid Bank Sync
-        </button>
-        <button 
-          onClick={() => handleIntegrationClick('QuickBooks')}
-          disabled={disabled || loading}
-          className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 p-4 text-sm font-medium text-slate-700 dark:text-slate-300 transition-all hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Calculator className="h-4 w-4" />
-          QuickBooks
-        </button>
-        <button 
-          onClick={() => handleIntegrationClick('Xero')}
-          disabled={disabled || loading}
-          className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 p-4 text-sm font-medium text-slate-700 dark:text-slate-300 transition-all hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Network className="h-4 w-4" />
-          Xero Integration
-        </button>
-      </div>
     </div>
   );
 }

@@ -7,20 +7,65 @@ export const api = axios.create({
   timeout: 120000,
 });
 
-export async function uploadCsv(file) {
+api.interceptors.request.use((config) => {
+  const token = sessionStorage.getItem("vertex_jwt");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export async function login(username, password) {
+  const { data } = await api.post("/auth/login", { username, password });
+  return data;
+}
+
+export async function signup(email, password, name) {
+  const { data } = await api.post("/auth/signup", { email, password, name });
+  return data;
+}
+
+export async function fetchClients() {
+  const { data } = await api.get("/clients");
+  return data;
+}
+
+export async function createClient(company_name, industry) {
+  const { data } = await api.post("/clients", { company_name, industry });
+  return data;
+}
+
+export async function deleteClient(clientId) {
+  const { data } = await api.delete(`/clients/${clientId}`);
+  return data;
+}
+
+export async function fetchClientAnalyses(clientId) {
+  const { data } = await api.get(`/clients/${clientId}/analyses`);
+  return data;
+}
+
+export async function uploadAndAnalyzeCsv(file, clientId, periodTitle) {
   const form = new FormData();
   form.append("file", file);
-  const { data } = await api.post("/upload", form);
+  form.append("client_id", clientId);
+  form.append("period_title", periodTitle);
+  const { data } = await api.post("/analyses", form);
+  return data; // Returns { id: <analysis_id> }
+}
+
+export async function fetchAnalysis(analysisId) {
+  const { data } = await api.get(`/analyses/${analysisId}`);
   return data;
 }
 
-export async function analyzeData(rows) {
-  const { data } = await api.post("/analyze", { data: rows });
+export async function deleteAnalysis(analysisId) {
+  const { data } = await api.delete(`/analyses/${analysisId}`);
   return data;
 }
 
-export async function fetchInsights(insightContext) {
-  const { data } = await api.post("/insights", { insightContext });
+export async function fetchInsights(analysisId) {
+  const { data } = await api.post(`/analyses/${analysisId}/insights`);
   return data;
 }
 

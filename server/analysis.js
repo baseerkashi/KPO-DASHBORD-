@@ -200,51 +200,54 @@ function formatLabel(s) {
 export function computeRisk(rows, financials) {
   const indicators = [];
   let score = 0;
-
+  
+  let profitabilityRisk = 0; // out of 35
+  let growthRisk = 0; // out of 35
+  let liquidityRisk = 0; // out of 30
+  
+  // 1. Profitability (35% weight)
+  if (financials.profitMargin < 0) {
+    indicators.push("Negative profit margin indicates severe operational inefficiency.");
+    profitabilityRisk = 35;
+  } else if (financials.profitMargin < 5) {
+    indicators.push("Net profit margin is severely low (<5%).");
+    profitabilityRisk = 25;
+  } else if (financials.profitMargin < 15) {
+    indicators.push("Net profit margin is moderate (room for improvement).");
+    profitabilityRisk = 10;
+  } else {
+    profitabilityRisk = 0;
+  }
+  
+  // 2. Growth (35% weight)
   if (rows.length >= 3) {
     const firstAvg = rows.slice(0, Math.min(3, rows.length)).reduce((a, r) => a + r.sales, 0) / Math.min(3, rows.length);
-    const lastAvg =
-      rows.slice(-Math.min(3, rows.length)).reduce((a, r) => a + r.sales, 0) / Math.min(3, rows.length);
-    if (lastAvg < firstAvg * 0.9) {
-      indicators.push("Revenue trend is declining compared to earlier periods.");
-      score += 25;
+    const lastAvg = rows.slice(-Math.min(3, rows.length)).reduce((a, r) => a + r.sales, 0) / Math.min(3, rows.length);
+    if (lastAvg < firstAvg * 0.8) {
+      indicators.push("Severe revenue decline (>20%) compared to earlier periods.");
+      growthRisk = 35;
+    } else if (lastAvg < firstAvg * 0.95) {
+      indicators.push("Revenue is stagnating or slightly declining.");
+      growthRisk = 15;
     }
   }
-
-  const highExpenseMonths = rows.filter((r) => r.sales > 0 && r.expenses / r.sales > 0.85).length;
-  if (highExpenseMonths >= Math.ceil(rows.length / 2)) {
-    indicators.push("Expense ratio is high (>85% of sales) in most months.");
-    score += 25;
-  } else if (rows.some((r) => r.sales > 0 && r.expenses / r.sales > 0.95)) {
-    indicators.push("Some months show very high expense-to-sales ratio.");
-    score += 15;
+  
+  // 3. Liquidity / Solvency (30% weight)
+  if (financials.runway !== null && financials.runway < 3) {
+    indicators.push("Critical liquidity risk: Runway is less than 3 months.");
+    liquidityRisk = 30;
+  } else if (financials.runway !== null && financials.runway < 6) {
+    indicators.push("Moderate liquidity risk: Runway is under 6 months.");
+    liquidityRisk = 15;
+  }
+  
+  if (financials.debtToIncomeRatio > 1.5) {
+    indicators.push("High solvency risk: Debt-to-income ratio exceeds 1.5x.");
+    liquidityRisk = Math.min(30, liquidityRisk + 15);
   }
 
-  if (financials.profitMargin < 5) {
-    indicators.push("Net profit margin is below 5%.");
-    score += 20;
-  } else if (financials.profitMargin < 10) {
-    indicators.push("Net profit margin is moderate; room for improvement.");
-    score += 10;
-  }
-
-  const salesVals = rows.map((r) => r.sales);
-  const mean = salesVals.reduce((a, b) => a + b, 0) / salesVals.length;
-  const variance =
-    salesVals.reduce((a, v) => a + Math.pow(v - mean, 2), 0) / Math.max(1, salesVals.length);
-  const cv = mean > 0 ? Math.sqrt(variance) / mean : 0;
-  if (cv > 0.35 && rows.length >= 4) {
-    indicators.push("Sales show irregular patterns (high variability month to month).");
-    score += 20;
-  }
-
-  const liabilitiesRisk = rows.some((r) => r.liabilities != null && r.sales > 0 && r.liabilities / r.sales > 0.5);
-  if (liabilitiesRisk) {
-    indicators.push("Liabilities are elevated relative to monthly sales.");
-    score += 15;
-  }
-
-  score = Math.min(100, score);
+  score = profitabilityRisk + growthRisk + liquidityRisk;
+  
   let level = "Low";
   if (score >= 60) level = "High";
   else if (score >= 30) level = "Medium";
@@ -257,6 +260,11 @@ export function computeRisk(rows, financials) {
     riskScore: score,
     riskLevel: level,
     riskIndicators: indicators,
+    breakdown: {
+      profitability: profitabilityRisk,
+      growth: growthRisk,
+      liquidity: liquidityRisk
+    }
   };
 }
 
