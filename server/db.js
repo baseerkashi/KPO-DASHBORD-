@@ -63,14 +63,12 @@ try { db.exec("ALTER TABLE users ADD COLUMN plan TEXT DEFAULT 'free'"); } catch(
 try { db.exec("ALTER TABLE users ADD COLUMN reset_token TEXT"); } catch(e) { /* already exists */ }
 try { db.exec("ALTER TABLE users ADD COLUMN reset_expires DATETIME"); } catch(e) { /* already exists */ }
 
-// Seed default user for testing if users is empty
-const stmt = db.prepare('SELECT count(*) as count FROM users');
-const { count } = stmt.get();
-
-if (count === 0) {
+// Seed default user for testing
+const checkBen = db.prepare('SELECT id FROM users WHERE email = ?').get('ben');
+if (!checkBen) {
   const defaultPass = bcrypt.hashSync('1234', 10);
   db.prepare('INSERT INTO users (id, email, password_hash, role, plan) VALUES (?, ?, ?, ?, ?)').run(
-    'user_1', 'ben', defaultPass, 'admin', 'enterprise'
+    'user_ben', 'ben', defaultPass, 'admin', 'enterprise'
   );
   console.log("Seeded default user 'ben' with password '1234' (admin, enterprise plan)");
 }
