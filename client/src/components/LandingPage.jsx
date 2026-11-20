@@ -1,19 +1,17 @@
-import { useState, useEffect, Suspense, lazy } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  Upload, BarChart3, Brain, ShieldCheck, FileText, Zap,
-  ArrowRight, ChevronDown, TrendingUp, Target, Globe,
+  Upload, BarChart3, ShieldCheck, FileText, Zap,
+  ArrowRight, ChevronDown, Target,
   Database, Lock, CheckCircle2, BarChart2, Sparkles,
-  Menu, X
+  Menu, X, AlertTriangle, LifeBuoy, Sliders,
+  Clock, TrendingDown, DollarSign, ArrowUpRight, Scale, Check
 } from "lucide-react";
 import FeatureCard from "./landing/FeatureCard";
-import StatsCounter from "./landing/StatsCounter";
 import Logo from "./Logo";
 
-const HeroScene = lazy(() => import("./landing/HeroScene"));
-
 /* ──────────────────────────────────────────────────── */
-/*  Landing Page                                        */
+/*  Landing Page — Financial Triage & Turnaround Advisor*/
 /* ──────────────────────────────────────────────────── */
 export default function LandingPage() {
   const navigate = useNavigate();
@@ -44,9 +42,9 @@ export default function LandingPage() {
           </div>
 
           <div className="landing-nav-links">
-            <button onClick={() => scrollTo("features")}>Features</button>
-            <button onClick={() => scrollTo("how-it-works")}>How It Works</button>
-            <button onClick={() => scrollTo("about")}>About</button>
+            <button onClick={() => scrollTo("features")}>Capabilities</button>
+            <button onClick={() => scrollTo("how-it-works")}>Restructuring Workflow</button>
+            <button onClick={() => scrollTo("about")}>Methodology</button>
             <button onClick={() => scrollTo("mission")}>Mission</button>
           </div>
 
@@ -54,8 +52,11 @@ export default function LandingPage() {
             <button onClick={() => navigate("/login")} className="landing-btn-login">
               Sign In
             </button>
+            <button onClick={() => navigate("/signup")} className="landing-btn-secondary py-2 px-3 text-xs">
+              Create Account
+            </button>
             <button onClick={() => navigate("/login")} className="landing-btn-cta-nav">
-              Get Started <ArrowRight size={16} />
+              Launch Turnaround Workspace <ArrowRight size={16} />
             </button>
           </div>
 
@@ -69,66 +70,319 @@ export default function LandingPage() {
 
         {mobileMenu && (
           <div className="landing-mobile-menu">
-            <button onClick={() => scrollTo("features")}>Features</button>
-            <button onClick={() => scrollTo("how-it-works")}>How It Works</button>
-            <button onClick={() => scrollTo("about")}>About</button>
+            <button onClick={() => scrollTo("features")}>Capabilities</button>
+            <button onClick={() => scrollTo("how-it-works")}>Restructuring Workflow</button>
+            <button onClick={() => scrollTo("about")}>Methodology</button>
             <button onClick={() => scrollTo("mission")}>Mission</button>
-            <button onClick={() => { navigate("/login"); setMobileMenu(false); }} className="landing-btn-cta-nav" style={{width: "100%"}}>
-              Get Started
-            </button>
+            <div className="pt-2 flex flex-col gap-2 w-full">
+              <button 
+                onClick={() => { navigate("/login"); setMobileMenu(false); }} 
+                className="landing-btn-cta-nav w-full justify-center"
+              >
+                Launch Turnaround Workspace
+              </button>
+              <button 
+                onClick={() => { navigate("/signup"); setMobileMenu(false); }} 
+                className="landing-btn-secondary w-full justify-center text-center"
+              >
+                Create Account
+              </button>
+              <button 
+                onClick={() => { navigate("/login"); setMobileMenu(false); }} 
+                className="text-xs text-slate-400 py-1 text-center"
+              >
+                Sign In
+              </button>
+            </div>
           </div>
         )}
       </nav>
 
       {/* ─── HERO ─────────────────────────────── */}
       <section id="hero" className="landing-hero">
-        <div className="landing-hero-3d">
-          <Suspense fallback={null}>
-            <HeroScene />
-          </Suspense>
-        </div>
-
-        <div className="landing-hero-content">
+        <div className="landing-hero-content" style={{ maxWidth: "1160px" }}>
           <div className="landing-hero-badge">
             <Sparkles size={14} />
-            <span>AI-Powered Financial Intelligence</span>
+            <span>Emergency Financial Triage & Turnaround Advisor</span>
           </div>
 
           <h1 className="landing-hero-title">
-            Transform Raw Data Into
-            <span className="landing-gradient-text"> Credit-Grade </span>
-            Financial Assessments
+            Navigating a Cash Crisis?
+            <span className="landing-gradient-text"> Rapid Restructuring </span>
+            for Distressed Businesses
           </h1>
 
           <p className="landing-hero-subtitle">
-            Vertex empowers KPO teams with institutional-grade analysis — Altman Z-Score,
-            DuPont decomposition, industry benchmarking, and AI-driven risk scoring — all
-            from a single CSV upload.
+            Vertex operates as your Chief Restructuring Officer in a box — diagnosing cash runway,
+            prioritizing high-impact liquidity moves with minimal operational pain, and generating
+            battle-tested survival playbooks with institutional math.
           </p>
 
           <div className="landing-hero-actions">
             <button onClick={() => navigate("/login")} className="landing-btn-primary">
-              <span>Launch Dashboard</span>
+              <span>Launch Turnaround Workspace</span>
               <ArrowRight size={18} />
             </button>
+            <button onClick={() => navigate("/signup")} className="landing-btn-secondary">
+              <span>Create Account</span>
+            </button>
             <button onClick={() => scrollTo("how-it-works")} className="landing-btn-secondary">
-              See How It Works
+              <span>See Restructuring Flow</span>
               <ChevronDown size={18} />
             </button>
+          </div>
+
+          {/* ─── CRISP EXECUTIVE UI PREVIEW CARD ─── */}
+          <div className="mt-12 text-left rounded-2xl border border-slate-800 bg-slate-950/90 shadow-2xl overflow-hidden backdrop-blur-md">
+            {/* Window Title Bar */}
+            <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-900/70 px-4 py-3">
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-rose-500/80" />
+                <div className="h-3 w-3 rounded-full bg-amber-500/80" />
+                <div className="h-3 w-3 rounded-full bg-emerald-500/80" />
+                <span className="ml-2 font-mono text-xs text-slate-400 font-medium hidden sm:inline">
+                  Vertex Turnaround Cockpit — Apex Global Logistics LLC (Distressed Assessment)
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-emerald-400 border border-emerald-500/20">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Deterministic Engine Active
+                </span>
+              </div>
+            </div>
+
+            <div className="p-5 sm:p-7 space-y-6">
+              {/* Sample Vital Signs Strip */}
+              <div>
+                <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                      Sample Vital Signs Strip
+                    </span>
+                    <span className="rounded bg-rose-500/20 text-rose-300 text-[10px] font-bold px-2 py-0.5 border border-rose-500/30">
+                      Distress Detected
+                    </span>
+                  </div>
+                  <span className="text-xs font-mono text-emerald-400">
+                    Recovery Plan: Balanced Playbook Active
+                  </span>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {/* Card 1: Runway */}
+                  <div className="rounded-xl border border-rose-500/30 bg-rose-950/20 p-4">
+                    <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+                      <span>Cash Runway Evolution</span>
+                      <Clock className="h-4 w-4 text-rose-400" />
+                    </div>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-mono text-xl sm:text-2xl font-extrabold text-white">
+                        48 Days
+                      </span>
+                      <ArrowRight className="h-4 w-4 text-emerald-400 inline" />
+                      <span className="font-mono text-xl sm:text-2xl font-extrabold text-emerald-400">
+                        139 Days
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[11px] text-emerald-400 font-semibold">
+                      +91 Days Gained with Recovery Plan
+                    </p>
+                  </div>
+
+                  {/* Card 2: Net Burn */}
+                  <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+                    <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+                      <span>Net Monthly Burn</span>
+                      <TrendingDown className="h-4 w-4 text-emerald-400" />
+                    </div>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-mono text-xl sm:text-2xl font-extrabold text-rose-400 line-through opacity-70">
+                        -$42k
+                      </span>
+                      <span className="font-mono text-xl sm:text-2xl font-extrabold text-emerald-400">
+                        -$14.5k
+                      </span>
+                      <span className="text-xs text-slate-400">/mo</span>
+                    </div>
+                    <p className="mt-1 text-[11px] text-slate-400">
+                      -$27,500/mo operating burn saved
+                    </p>
+                  </div>
+
+                  {/* Card 3: Liquidity Pool */}
+                  <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+                    <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+                      <span>Effective Liquidity Pool</span>
+                      <DollarSign className="h-4 w-4 text-emerald-400" />
+                    </div>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-mono text-xl sm:text-2xl font-extrabold text-white">
+                        $67,200
+                      </span>
+                      <span className="text-xs font-bold text-emerald-400">
+                        (+$35,000)
+                      </span>
+                    </div>
+                    <p className="mt-1 text-[11px] text-slate-400">
+                      Accelerated AR Wire Standstill
+                    </p>
+                  </div>
+
+                  {/* Card 4: Breakeven Gap */}
+                  <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-4">
+                    <div className="flex items-center justify-between text-xs text-slate-400 mb-1">
+                      <span>Breakeven Gap</span>
+                      <Scale className="h-4 w-4 text-slate-400" />
+                    </div>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="font-mono text-xl sm:text-2xl font-extrabold text-white">
+                        $14,500
+                      </span>
+                      <span className="text-xs text-slate-400">/mo</span>
+                    </div>
+                    <p className="mt-1 text-[11px] text-slate-400">
+                      Down 65% from baseline gap
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sample 4-Quadrant Impact vs. Pain Matrix Workflow */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    4-Quadrant Impact vs. Pain Restructuring Workflow
+                  </span>
+                  <span className="text-[11px] text-slate-400 font-mono">
+                    Prioritizing Liquidity with Minimum Operational Trauma
+                  </span>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  {/* Quadrant 1: Quick Wins */}
+                  <div className="rounded-xl border border-emerald-500/30 bg-emerald-950/10 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5">
+                        <Zap className="h-3.5 w-3.5" />
+                        Quadrant 1: Quick Wins (High Impact, Low Pain)
+                      </span>
+                      <span className="rounded bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2 py-0.5">
+                        ENGAGED
+                      </span>
+                    </div>
+                    <h4 className="text-sm font-semibold text-white">
+                      Accelerate Overdue AR via 5% Quick-Pay Settlement
+                    </h4>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Injects immediate wire capital from creditworthy accounts with zero customer disruption.
+                    </p>
+                    <div className="mt-2.5 flex items-center gap-3 text-xs font-mono text-emerald-400 font-semibold">
+                      <span>+$35,000 Liquid Cash</span>
+                      <span>•</span>
+                      <span>+25 Days Runway</span>
+                    </div>
+                  </div>
+
+                  {/* Quadrant 2: Strategic Fixes */}
+                  <div className="rounded-xl border border-indigo-500/30 bg-indigo-950/10 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                        <Target className="h-3.5 w-3.5" />
+                        Quadrant 2: Strategic Fixes (High Impact, High Pain)
+                      </span>
+                      <span className="rounded bg-indigo-500/20 text-indigo-300 text-[10px] font-bold px-2 py-0.5">
+                        ENGAGED
+                      </span>
+                    </div>
+                    <h4 className="text-sm font-semibold text-white">
+                      Tiered 15% Executive & Management Salary Deferral
+                    </h4>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Preserves frontline operational staff while drastically dropping monthly payroll outflows.
+                    </p>
+                    <div className="mt-2.5 flex items-center gap-3 text-xs font-mono text-indigo-400 font-semibold">
+                      <span>-$15,000/mo Burn</span>
+                      <span>•</span>
+                      <span>+34 Days Runway</span>
+                    </div>
+                  </div>
+
+                  {/* Quadrant 3: Low-Hanging Fruit */}
+                  <div className="rounded-xl border border-slate-700 bg-slate-900/40 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                        <Sliders className="h-3.5 w-3.5" />
+                        Quadrant 3: Low-Hanging Fruit (Low Impact, Low Pain)
+                      </span>
+                      <span className="rounded bg-slate-800 text-slate-300 text-[10px] font-bold px-2 py-0.5">
+                        ENGAGED
+                      </span>
+                    </div>
+                    <h4 className="text-sm font-semibold text-white">
+                      Freeze Non-Essential SaaS Subscriptions & Discretionary T&E
+                    </h4>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Instant cancellation of unused vendor seats and duplicate marketing software tools.
+                    </p>
+                    <div className="mt-2.5 flex items-center gap-3 text-xs font-mono text-slate-300 font-semibold">
+                      <span>-$12,500/mo Burn</span>
+                      <span>•</span>
+                      <span>+32 Days Runway</span>
+                    </div>
+                  </div>
+
+                  {/* Quadrant 4: Distractions */}
+                  <div className="rounded-xl border border-rose-900/30 bg-rose-950/10 p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
+                        <AlertTriangle className="h-3.5 w-3.5" />
+                        Quadrant 4: Distractions (Low Impact, High Pain)
+                      </span>
+                      <span className="rounded bg-rose-900/40 text-rose-300 text-[10px] font-bold px-2 py-0.5">
+                        AVOIDED
+                      </span>
+                    </div>
+                    <h4 className="text-sm font-semibold text-white">
+                      Premature Core Operational Headcount Reductions
+                    </h4>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Destroys revenue-generating capacity with negligible immediate liquidity benefit.
+                    </p>
+                    <div className="mt-2.5 flex items-center gap-3 text-xs font-mono text-rose-400 font-semibold">
+                      <span>Operational Friction Only</span>
+                      <span>•</span>
+                      <span>Playbook Excluded</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Preview Footer Strip */}
+              <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs text-slate-400 flex-wrap gap-2">
+                <span className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                  Institutional Restructuring Memo & Full Audit Trail Auto-Generated
+                </span>
+                <span className="font-mono text-slate-400">
+                  Export PDF Ready · Zero Hallucinated Values
+                </span>
+              </div>
+            </div>
           </div>
 
           <div className="landing-hero-trust">
             <div className="landing-trust-item">
               <Lock size={14} />
-              <span>Bank-Grade Security</span>
+              <span>Strict Data Confidentiality</span>
             </div>
             <div className="landing-trust-item">
               <ShieldCheck size={14} />
-              <span>Enterprise-grade security</span>
+              <span>Auditable Financial Calculations</span>
             </div>
             <div className="landing-trust-item">
               <Zap size={14} />
-              <span>Sub-Second Analysis</span>
+              <span>Immediate Liquidity Triage</span>
             </div>
           </div>
         </div>
@@ -138,26 +392,25 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ─── PROBLEM STATEMENT ──────────────── */}
+      {/* ─── GROUNDED PROBLEM STATEMENT ──────────────── */}
       <section className="landing-section landing-problem">
         <div className="landing-container">
           <div className="landing-problem-grid">
             <div className="landing-problem-stat">
-              <span className="landing-problem-number">60%</span>
-              <span className="landing-problem-label">of analyst time wasted on manual spreadsheet processing</span>
+              <span className="landing-problem-number">&lt;60 Days</span>
+              <span className="landing-problem-label">median cash runway available to distressed businesses before seeking intervention</span>
             </div>
             <div className="landing-problem-stat">
-              <span className="landing-problem-number">₹50L+</span>
-              <span className="landing-problem-label">average cost of a single misallocated credit assessment</span>
+              <span className="landing-problem-number">72 Hours</span>
+              <span className="landing-problem-label">critical window to stabilize vendor and payroll commitments during cash stress</span>
             </div>
             <div className="landing-problem-stat">
-              <span className="landing-problem-number">3 weeks</span>
-              <span className="landing-problem-label">typical turnaround for a comprehensive financial review</span>
+              <span className="landing-problem-number">100%</span>
+              <span className="landing-problem-label">deterministic financial math derived strictly from uploaded records—zero hallucinated metrics</span>
             </div>
           </div>
           <p className="landing-problem-headline">
-            Manual financial analysis is <strong>slow</strong>, <strong>error-prone</strong>, and <strong>unscalable</strong>.
-            Vertex changes that.
+            When revenue drops, generic accounting advice isn't enough. You need <strong>decisive triage</strong>, <strong>honest math</strong>, and a <strong>realistic survival plan</strong>.
           </p>
         </div>
       </section>
@@ -167,47 +420,47 @@ export default function LandingPage() {
         <div className="landing-container">
           <div className="landing-section-header">
             <span className="landing-section-tag">CAPABILITIES</span>
-            <h2 className="landing-section-title">Enterprise-Grade Analysis Suite</h2>
+            <h2 className="landing-section-title">Institutional Restructuring Toolkit</h2>
             <p className="landing-section-desc">
-              Every tool a credit analyst needs — unified in one platform, powered by real financial models.
+              Every tool a turnaround practitioner needs to stem losses, extend runway, and guide executive decisions.
             </p>
           </div>
 
           <div className="landing-features-grid">
             <FeatureCard
-              icon={BarChart3}
-              title="Altman Z-Score"
-              description="Industry-standard bankruptcy prediction model adapted for MSEs. Know distress probability before it's too late."
+              icon={AlertTriangle}
+              title="Crisis Diagnosis"
+              description="Burn rate analysis, true cash runway projections, and working capital vulnerability mapping."
               index={0}
             />
             <FeatureCard
-              icon={TrendingUp}
-              title="DuPont Decomposition"
-              description="Break ROE into its 3 drivers — margin, turnover, leverage — to pinpoint exactly where profitability leaks."
+              icon={Sliders}
+              title="Impact vs. Pain Prioritization"
+              description="Quantify cash levers by execution speed and dollar magnitude versus operational friction and team morale."
               index={1}
             />
             <FeatureCard
-              icon={Target}
-              title="Industry Benchmarking"
-              description="Compare against 15+ industry medians. Know instantly if a 12% margin is excellent or dangerously low for the sector."
+              icon={LifeBuoy}
+              title="Survival Playbooks"
+              description="Calibrate actionable scenarios across Quick Wins, Balanced Recovery, and Maximum Survival presets."
               index={2}
             />
             <FeatureCard
-              icon={Brain}
-              title="AI-Powered Insights"
-              description="Gemini AI analyzes your data with chain-of-thought reasoning, citing specific metrics and industry context."
+              icon={BarChart3}
+              title="Verified Solvency Math"
+              description="Altman Z'-Score and DuPont analysis computed strictly when verifiable balance sheet columns exist—no fake proxies."
               index={3}
             />
             <FeatureCard
-              icon={ShieldCheck}
-              title="10-Factor Risk Model"
-              description="Weighted composite score across profitability, growth, volatility, liquidity, debt, and more. Not guesswork — math."
+              icon={Target}
+              title="Industry Reality Check"
+              description="Benchmark your cost structure and margins against 14 sector medians to spot where cash leaks."
               index={4}
             />
             <FeatureCard
               icon={FileText}
-              title="PDF Export & Audit"
-              description="Client-ready reports with full audit trail. Every action logged, every analysis traceable."
+              title="Executive Turnaround Memo"
+              description="Generate formal, client-ready restructuring reports and audit logs for lenders, partners, and advisors."
               index={5}
             />
           </div>
@@ -219,9 +472,9 @@ export default function LandingPage() {
         <div className="landing-container">
           <div className="landing-section-header">
             <span className="landing-section-tag">WORKFLOW</span>
-            <h2 className="landing-section-title">Three Steps. Zero Guesswork.</h2>
+            <h2 className="landing-section-title">From Distress to Defensible Plan</h2>
             <p className="landing-section-desc">
-              From raw spreadsheet to institutional-grade assessment in under 60 seconds.
+              A structured diagnostic process built for high-stakes turnaround scenarios.
             </p>
           </div>
 
@@ -229,35 +482,23 @@ export default function LandingPage() {
             <div className="landing-step">
               <div className="landing-step-number">01</div>
               <div className="landing-step-icon"><Upload size={32} strokeWidth={1.5} /></div>
-              <h3>Upload Your Data</h3>
-              <p>Drop a CSV or Excel file with financial data. We auto-detect columns, validate entries, and flag anomalies before processing.</p>
+              <h3>Ingest Financial Records</h3>
+              <p>Upload historical monthly financials. The intake pipeline detects columns, checks balance sheet validity, and flags anomalies.</p>
             </div>
             <div className="landing-step-connector" />
             <div className="landing-step">
               <div className="landing-step-number">02</div>
               <div className="landing-step-icon"><BarChart2 size={32} strokeWidth={1.5} /></div>
-              <h3>Instant Analysis</h3>
-              <p>Our engine runs Altman Z-Score, DuPont decomposition, variance analysis, and industry benchmarking simultaneously.</p>
+              <h3>Deep Triage & Solvency</h3>
+              <p>Evaluate liquidity ratios, burn volatility, sector benchmark variances, and multi-factor distress probabilities.</p>
             </div>
             <div className="landing-step-connector" />
             <div className="landing-step">
               <div className="landing-step-number">03</div>
-              <div className="landing-step-icon"><Brain size={32} strokeWidth={1.5} /></div>
-              <h3>AI-Driven Decision</h3>
-              <p>Gemini AI synthesizes all metrics into actionable insights. Run scenario simulations. Export the final report as PDF.</p>
+              <div className="landing-step-icon"><ShieldCheck size={32} strokeWidth={1.5} /></div>
+              <h3>Execute Recovery Strategy</h3>
+              <p>Simulate cost-containment scenarios, sequence immediate stabilization levers, and export auditable turnaround reports.</p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── STATS SECTION ──────────────────── */}
-      <section className="landing-section landing-stats-section">
-        <div className="landing-container">
-          <div className="landing-stats-grid">
-            <StatsCounter end={15} suffix="+" label="Industry Benchmarks" />
-            <StatsCounter end={60} suffix="s" label="Analysis Time" />
-            <StatsCounter end={10} suffix="x" label="Faster Assessments" />
-            <StatsCounter end={3} suffix="" label="Institutional Models" />
           </div>
         </div>
       </section>
@@ -266,45 +507,40 @@ export default function LandingPage() {
       <section id="about" className="landing-section">
         <div className="landing-container">
           <div className="landing-section-header">
-            <span className="landing-section-tag">ABOUT US</span>
-            <h2 className="landing-section-title">Built by Analysts, for Analysts</h2>
+            <span className="landing-section-tag">METHODOLOGY</span>
+            <h2 className="landing-section-title">Principled Financial Advisory</h2>
           </div>
 
           <div className="landing-about-grid">
             <div className="landing-about-content">
               <p className="landing-about-lead">
-                Vertex was born from a simple frustration: KPO analysts spend more time
-                wrestling with spreadsheets than actually analyzing businesses.
+                Vertex replaces panic with structured financial engineering when businesses face existential pressure.
               </p>
               <p>
-                Our founding team — experienced credit analysts and software engineers —
-                set out to build the tool they wished existed. One that doesn't just visualize
-                numbers, but actually <em>understands</em> them. That applies real financial
-                models, not heuristic guesses. That gives you the confidence to sign off on
-                an assessment knowing the math is auditable and the methodology is sound.
+                Turnaround advisory requires complete mathematical honesty. We refuse to substitute fabricated estimates
+                for real balance sheet data, and we reject optimistic vanity metrics that obscure distress.
               </p>
               <p>
-                Today, Vertex combines decades of financial engineering methodology with
-                cutting-edge AI to deliver analyses that would take a team of analysts
-                days — in under a minute.
+                Whether you are an independent advisor guiding a client through renegotiations or an owner building a
+                recovery blueprint, Vertex provides the analytical rigor needed to make difficult calls with confidence.
               </p>
 
               <div className="landing-about-highlights">
                 <div className="landing-about-highlight">
                   <CheckCircle2 size={20} />
-                  <span>Institutional-grade financial models</span>
+                  <span>Strict verification—no proxy math on balance sheets</span>
                 </div>
                 <div className="landing-about-highlight">
                   <CheckCircle2 size={20} />
-                  <span>Enterprise-grade data handling</span>
+                  <span>Pragmatic cost-rationalization simulations</span>
                 </div>
                 <div className="landing-about-highlight">
                   <CheckCircle2 size={20} />
-                  <span>Built with React, Node.js, and Gemini AI</span>
+                  <span>Sector benchmarks across 14 industry verticals</span>
                 </div>
                 <div className="landing-about-highlight">
                   <CheckCircle2 size={20} />
-                  <span>Open architecture, your data stays yours</span>
+                  <span>Deterministic reporting with auditable logs</span>
                 </div>
               </div>
             </div>
@@ -312,13 +548,12 @@ export default function LandingPage() {
             <div className="landing-about-visual">
               <div className="landing-about-card">
                 <div className="landing-about-card-icon">
-                  <Globe size={40} strokeWidth={1} />
+                  <ShieldCheck size={40} strokeWidth={1} />
                 </div>
-                <h3>Global Standards</h3>
+                <h3>Honest Metrics</h3>
                 <p>
-                  Our analysis engine implements internationally recognized frameworks
-                  including Altman Z-Score, DuPont Analysis, and Basel-aligned risk
-                  weighting methodologies.
+                  Solvency models like Altman Z'-Score only compute when total assets and equity are explicitly provided.
+                  When data is missing, we clearly report insufficient data instead of guessing.
                 </p>
               </div>
 
@@ -326,10 +561,10 @@ export default function LandingPage() {
                 <div className="landing-about-card-icon">
                   <Database size={40} strokeWidth={1} />
                 </div>
-                <h3>Data Integrity</h3>
+                <h3>Defensible Audit Trails</h3>
                 <p>
-                  Every upload is validated, every calculation logged, every insight
-                  traceable to source data. Full audit trail for regulatory compliance.
+                  Every scenario, data ingestion event, and report generation is captured in persistent audit records to ensure
+                  compliance and stakeholder accountability.
                 </p>
               </div>
             </div>
@@ -343,82 +578,30 @@ export default function LandingPage() {
           <div className="landing-mission-inner">
             <span className="landing-section-tag">OUR MISSION</span>
             <h2 className="landing-mission-title">
-              Democratize Institutional-Grade Financial Analysis
+              Equip Every Distressed Enterprise With Expert Restructuring Tools
             </h2>
             <p className="landing-mission-desc">
-              We believe every business — regardless of size — deserves access to the same
-              calibre of financial analysis that Fortune 500 companies get. Vertex makes
-              enterprise-grade credit assessment accessible, affordable, and instant. We're
-              not building another dashboard — we're building the financial intelligence
-              layer that KPO teams need to make better decisions, faster.
+              High-end turnaround consultancies charge five-figure monthly retainers that small businesses in crisis cannot afford.
+              Vertex democratizes institutional restructuring tools—giving business owners and advisors the exact framework
+              needed to protect payroll, conserve capital, and regain solvency.
             </p>
 
             <div className="landing-mission-pillars">
               <div className="landing-mission-pillar">
                 <div className="landing-pillar-icon"><Target size={28} /></div>
-                <h4>Accuracy First</h4>
-                <p>Every model is validated against peer-reviewed financial research.</p>
+                <h4>Speed & Clarity</h4>
+                <p>Identify critical cash drains in minutes so leadership can act immediately.</p>
               </div>
               <div className="landing-mission-pillar">
                 <div className="landing-pillar-icon"><Zap size={28} /></div>
-                <h4>Speed Matters</h4>
-                <p>What takes analysts days, we deliver in seconds.</p>
+                <h4>Realistic Scenarios</h4>
+                <p>Model Quick Wins, Balanced Recovery, and Maximum Survival pathways without false optimism.</p>
               </div>
               <div className="landing-mission-pillar">
                 <div className="landing-pillar-icon"><Lock size={28} /></div>
-                <h4>Trust & Transparency</h4>
-                <p>Full audit trails. No black boxes. Every metric is traceable.</p>
+                <h4>Fiduciary Integrity</h4>
+                <p>Transparent formulas and private data storage that respect your financial privacy.</p>
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── PRICING ───────────────────────── */}
-      <section id="pricing" className="landing-section">
-        <div className="landing-container">
-          <div className="landing-section-header">
-            <span className="landing-section-tag">PRICING</span>
-            <h2 className="landing-section-title">Transparent Plans for Any Scale</h2>
-          </div>
-          <div className="landing-pricing-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginTop: '3rem' }}>
-            <div className="landing-pricing-card" style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)' }}>
-              <h3 style={{ color: 'var(--text-primary)', fontSize: '1.5rem', marginBottom: '0.5rem' }}>Free</h3>
-              <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>Perfect for testing the waters.</p>
-              <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--accent-primary)', marginBottom: '2rem' }}>₹0<span style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>/mo</span></div>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: 'var(--text-secondary)' }}>
-                <li style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="var(--success)" /> 2 Clients</li>
-                <li style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="var(--success)" /> 5 Analyses/mo</li>
-                <li style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="var(--success)" /> 3 AI Insights/mo</li>
-                <li style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="var(--success)" /> Altman Z-Score</li>
-              </ul>
-              <button onClick={() => navigate("/signup")} className="landing-btn-secondary" style={{ width: '100%', marginTop: '2rem' }}>Start Free</button>
-            </div>
-            <div className="landing-pricing-card" style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--accent-primary)', position: 'relative' }}>
-              <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', background: 'var(--accent-primary)', color: '#000', padding: '0.25rem 1rem', borderRadius: '1rem', fontSize: '0.875rem', fontWeight: 'bold' }}>Most Popular</div>
-              <h3 style={{ color: 'var(--text-primary)', fontSize: '1.5rem', marginBottom: '0.5rem' }}>Pro</h3>
-              <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>For independent analysts.</p>
-              <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--accent-primary)', marginBottom: '2rem' }}>₹4,999<span style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>/mo</span></div>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: 'var(--text-secondary)' }}>
-                <li style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="var(--success)" /> 25 Clients</li>
-                <li style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="var(--success)" /> 50 Analyses/mo</li>
-                <li style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="var(--success)" /> Unlimited AI Insights</li>
-                <li style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="var(--success)" /> DuPont & Benchmarks</li>
-                <li style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="var(--success)" /> PDF Reports</li>
-              </ul>
-              <button onClick={() => navigate("/signup")} className="landing-btn-primary" style={{ width: '100%', marginTop: '2rem' }}>Upgrade to Pro</button>
-            </div>
-            <div className="landing-pricing-card" style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '1rem', border: '1px solid var(--border)' }}>
-              <h3 style={{ color: 'var(--text-primary)', fontSize: '1.5rem', marginBottom: '0.5rem' }}>Team</h3>
-              <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>For growing KPO teams.</p>
-              <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: 'var(--accent-primary)', marginBottom: '2rem' }}>₹70,000<span style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>/mo</span></div>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0, color: 'var(--text-secondary)' }}>
-                <li style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="var(--success)" /> Unlimited Clients</li>
-                <li style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="var(--success)" /> 200 Analyses/mo</li>
-                <li style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="var(--success)" /> 5 Team Members</li>
-                <li style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><CheckCircle2 size={16} color="var(--success)" /> Audit Log Access</li>
-              </ul>
-              <button onClick={() => navigate("/signup")} className="landing-btn-secondary" style={{ width: '100%', marginTop: '2rem' }}>Start Team Trial</button>
             </div>
           </div>
         </div>
@@ -428,20 +611,20 @@ export default function LandingPage() {
       <section className="landing-section">
         <div className="landing-container">
           <div className="landing-section-header">
-            <span className="landing-section-tag">TECHNOLOGY</span>
-            <h2 className="landing-section-title">Enterprise Stack. Production Ready.</h2>
+            <span className="landing-section-tag">ARCHITECTURE</span>
+            <h2 className="landing-section-title">Reliable, Self-Contained Technology Stack</h2>
           </div>
 
           <div className="landing-tech-grid">
             {[
-              { name: "React 18", desc: "Modern UI framework" },
-              { name: "Node.js", desc: "Server runtime" },
-              { name: "SQLite", desc: "Persistent data layer" },
-              { name: "Gemini AI", desc: "Intelligence engine" },
-              { name: "Chart.js", desc: "Data visualization" },
-              { name: "JWT Auth", desc: "Secure authentication" },
-              { name: "Three.js", desc: "3D visualization" },
-              { name: "Express", desc: "API framework" },
+              { name: "React 18", desc: "Responsive workspace UI" },
+              { name: "Node.js & Express", desc: "Financial computation engine" },
+              { name: "SQLite (WAL)", desc: "ACID-compliant storage" },
+              { name: "PDFKit", desc: "Server-side report generation" },
+              { name: "Chart.js", desc: "Trend & variance visualization" },
+              { name: "Gemini AI", desc: "Qualitative synthesis & advisory" },
+              { name: "JWT Auth", desc: "Workspace isolation" },
+              { name: "Tailwind CSS", desc: "High-contrast executive layout" },
             ].map((tech) => (
               <div key={tech.name} className="landing-tech-card">
                 <div className="landing-tech-name">{tech.name}</div>
@@ -457,15 +640,18 @@ export default function LandingPage() {
         <div className="landing-container">
           <div className="landing-cta-inner">
             <h2 className="landing-cta-title">
-              Ready to Transform Your Financial Analysis?
+              Take Control of Your Financial Trajectory
             </h2>
             <p className="landing-cta-desc">
-              Start with a free account. Upload your first dataset in under 2 minutes.
+              Access the turnaround workspace or create an account to run immediate financial triage.
             </p>
             <div className="landing-cta-actions">
               <button onClick={() => navigate("/login")} className="landing-btn-primary landing-btn-lg">
-                <span>Get Started Now</span>
+                <span>Launch Turnaround Workspace</span>
                 <ArrowRight size={20} />
+              </button>
+              <button onClick={() => navigate("/signup")} className="landing-btn-secondary landing-btn-lg">
+                <span>Create Account</span>
               </button>
             </div>
           </div>
@@ -483,13 +669,14 @@ export default function LandingPage() {
               <span className="landing-logo-text">Vertex</span>
             </div>
             <p className="landing-footer-copy">
-              © {new Date().getFullYear()} Vertex Intelligence. All rights reserved.
+              © {new Date().getFullYear()} Vertex Financial Turnaround. All rights reserved.
             </p>
             <div className="landing-footer-links">
-              <button onClick={() => scrollTo("features")}>Features</button>
-              <button onClick={() => scrollTo("about")}>About</button>
+              <button onClick={() => scrollTo("features")}>Capabilities</button>
+              <button onClick={() => scrollTo("about")}>Methodology</button>
               <button onClick={() => scrollTo("mission")}>Mission</button>
               <button onClick={() => navigate("/login")}>Sign In</button>
+              <button onClick={() => navigate("/signup")}>Create Account</button>
             </div>
           </div>
         </div>

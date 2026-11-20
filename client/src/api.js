@@ -5,6 +5,7 @@ const baseURL = import.meta.env.VITE_API_URL || "/api";
 export const api = axios.create({
   baseURL,
   timeout: 120000,
+  withCredentials: true, // Required for httpOnly cookie auth
 });
 
 api.interceptors.request.use((config) => {
@@ -15,6 +16,23 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const isAuthMe = error.config?.url?.includes("/auth/me");
+    const isPublicPath =
+      typeof window !== "undefined" &&
+      (window.location.pathname === "/" ||
+        window.location.pathname === "/login" ||
+        window.location.pathname === "/signup");
+
+    if (error.response?.status === 401 && !isAuthMe && !isPublicPath) {
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
+
 export async function login(username, password) {
   const { data } = await api.post("/auth/login", { username, password });
   return data;
@@ -22,6 +40,23 @@ export async function login(username, password) {
 
 export async function signup(email, password, name) {
   const { data } = await api.post("/auth/signup", { email, password, name });
+  return data;
+}
+
+export async function loginDemo() {
+  const { data } = await api.post("/auth/demo");
+  return data;
+}
+
+export async function logout() {
+  const { data } = await api.post("/auth/logout");
+  sessionStorage.removeItem("vertex_jwt");
+  sessionStorage.removeItem("vertex_authenticated");
+  return data;
+}
+
+export async function fetchMe() {
+  const { data } = await api.get("/auth/me");
   return data;
 }
 
@@ -42,6 +77,12 @@ export async function deleteClient(clientId) {
 
 export async function fetchClientAnalyses(clientId) {
   const { data } = await api.get(`/clients/${clientId}/analyses`);
+  return data;
+}
+
+export async function compareClientAnalyses(clientId, ids = []) {
+  const query = ids && ids.length ? `?ids=${ids.join(",")}` : "";
+  const { data } = await api.get(`/clients/${clientId}/compare${query}`);
   return data;
 }
 
@@ -71,5 +112,15 @@ export async function fetchInsights(analysisId) {
 
 export async function fetchSimulationInsights(context, question) {
   const { data } = await api.post("/insights/simulate", { context, question });
+  return data;
+}
+
+export async function updateInterviewContext(analysisId, interviewContext) {
+  const { data } = await api.patch(`/analyses/${analysisId}/interview`, interviewContext);
+  return data;
+}
+
+export async function saveSelectedLevers(analysisId, selectedLeverIds) {
+  const { data } = await api.patch(`/analyses/${analysisId}/interview`, { selectedLeverIds });
   return data;
 }

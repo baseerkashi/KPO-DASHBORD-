@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Logo from "./Logo";
-import { login } from "../api";
+import { login, loginDemo, fetchMe } from "../api";
 import { ArrowLeft } from "lucide-react";
 
 export default function Login({ theme }) {
@@ -26,18 +26,18 @@ export default function Login({ theme }) {
 
   // If already logged in, redirect
   useEffect(() => {
-    if (sessionStorage.getItem("vertex_jwt")) {
-      navigate("/clients");
-    }
-  }, []);
+    fetchMe()
+      .then(() => navigate("/clients"))
+      .catch(() => {});
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(false);
     try {
-      const data = await login(username, password);
-      sessionStorage.setItem("vertex_jwt", data.token);
+      await login(username, password);
+      sessionStorage.setItem("vertex_authenticated", "true");
       navigate("/clients");
     } catch (err) {
       setError(true);
@@ -60,13 +60,13 @@ export default function Login({ theme }) {
             <Logo className="h-12 w-12" />
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Sign In</h2>
-          <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">Vertex KPO Employee Portal</p>
+          <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">Financial Turnaround Workspace</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
             <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-400">
-              Employee Username
+              Username or Email
             </label>
             <input
               type="text"
@@ -102,13 +102,39 @@ export default function Login({ theme }) {
             disabled={loading}
             className="mt-2 w-full rounded-lg bg-zinc-900 px-4 py-3 text-sm font-bold tracking-wide text-white shadow-sm transition-all hover:bg-black hover:shadow-md disabled:opacity-50 dark:bg-zinc-100 dark:text-black dark:hover:bg-white"
           >
-            {loading ? "Authenticating..." : "Authenticate"}
+            {loading ? "Authenticating..." : "Sign In"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-[11px] text-slate-400 dark:text-slate-500">
-          Default credentials: <span className="font-mono text-slate-600 dark:text-slate-300">ben / 1234</span>
-        </p>
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-slate-200 dark:border-slate-800" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white/90 dark:bg-zinc-950 px-2 text-slate-400">Or</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={async () => {
+            setLoading(true);
+            setError(false);
+            try {
+              await loginDemo();
+              sessionStorage.setItem("vertex_authenticated", "true");
+              navigate("/clients");
+            } catch {
+              setError(true);
+            } finally {
+              setLoading(false);
+            }
+          }}
+          disabled={loading}
+          className="w-full rounded-lg border border-slate-200 dark:border-slate-800 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+        >
+          Try Demo Workspace
+        </button>
       </div>
     </div>
   );

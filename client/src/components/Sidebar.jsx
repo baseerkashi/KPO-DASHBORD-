@@ -1,5 +1,7 @@
+import { useNavigate } from "react-router-dom";
 import { LayoutDashboard, LineChart, ShieldAlert, Sparkles, SlidersHorizontal, LogOut } from "lucide-react";
 import Logo from "./Logo";
+import { logout } from "../api";
 
 const ICONS = {
   overview: LayoutDashboard,
@@ -10,6 +12,18 @@ const ICONS = {
 };
 
 export default function Sidebar({ sections, active, onSelect, onLogout }) {
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+    if (onLogout) onLogout();
+    navigate("/login");
+  };
+
   return (
     <nav
       className="flex h-full w-[240px] flex-shrink-0 flex-col border-r border-slate-200 bg-white/70 dark:border-white/10 dark:bg-black/60 py-6 pl-4 pr-3 transition-colors"
@@ -34,16 +48,14 @@ export default function Sidebar({ sections, active, onSelect, onLogout }) {
               <button
                 type="button"
                 onClick={() => onSelect(s.id)}
-                className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors duration-200 ${
-                  isActive
+                className={`group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium transition-colors duration-200 ${isActive
                     ? "bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white font-bold"
                     : "text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-slate-200"
-                }`}
+                  }`}
               >
                 <Icon
-                  className={`h-5 w-5 flex-shrink-0 transition-transform ${
-                    isActive ? "text-black dark:text-white" : "text-slate-400 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-400"
-                  }`}
+                  className={`h-5 w-5 flex-shrink-0 transition-transform ${isActive ? "text-black dark:text-white" : "text-slate-400 group-hover:text-slate-700 dark:text-slate-500 dark:group-hover:text-slate-400"
+                    }`}
                   aria-hidden
                 />
                 <span>{s.label}</span>
@@ -56,8 +68,8 @@ export default function Sidebar({ sections, active, onSelect, onLogout }) {
         })}
       </ul>
       <div className="mt-auto px-3 border-t border-slate-200 dark:border-white/10 pt-4 pb-2">
-        <button 
-          onClick={onLogout}
+        <button
+          onClick={handleLogout}
           className="group flex w-full items-center gap-3 rounded-lg px-3 py-2 mt-2 text-left text-sm font-medium text-slate-600 hover:bg-rose-50 hover:text-rose-600 dark:text-slate-400 dark:hover:bg-rose-500/10 dark:hover:text-rose-400 transition-colors"
         >
           <LogOut className="h-4 w-4" />

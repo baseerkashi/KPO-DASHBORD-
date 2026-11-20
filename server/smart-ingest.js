@@ -20,7 +20,7 @@ function cleanNumeric(raw) {
 
   // Handle accounting negatives: (1,234) → -1234
   if (/^\(.*\)$/.test(s)) {
-    s = "-" + s.replace(/[()]/g, "");
+    s = "-" + s.replace(/[()\-]/g, "").trim();
   }
 
   // Remove currency symbols and commas

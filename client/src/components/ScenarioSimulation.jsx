@@ -1,14 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
 import { fetchSimulationInsights } from "../api";
 
-export default function ScenarioSimulation({ financials, risk, rowsCount }) {
+export default function ScenarioSimulation({ financials, risk, rowsCount, interviewContext }) {
   const [revAdj, setRevAdj] = useState(0); // percentage
   const [expAdj, setExpAdj] = useState(0); // percentage
-  const [investment, setInvestment] = useState(0); // absolute $
-  const [headcountChange, setHeadcountChange] = useState(0); // absolute number
-  const [marketingBoost, setMarketingBoost] = useState(0); // absolute $ / month
-  const [customerChurn, setCustomerChurn] = useState(0); // percentage
-  const [newLoan, setNewLoan] = useState(0); // absolute $
+  const [cashInjection, setCashInjection] = useState(0); // absolute $
+  const [payrollCutPct, setPayrollCutPct] = useState(0); // percentage
   const [prompt, setPrompt] = useState("");
   const [aiResponse, setAiResponse] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -23,7 +20,7 @@ export default function ScenarioSimulation({ financials, risk, rowsCount }) {
     return () => clearTimeout(timer);
   }, [cooldown]);
 
-  // Derive simulation metrics
+  // Derive simulation metrics strictly from verified baseline numbers
   const simParams = useMemo(() => {
     if (!financials || !rowsCount) return null;
     
@@ -32,26 +29,30 @@ export default function ScenarioSimulation({ financials, risk, rowsCount }) {
     const avgExp = financials.totalExpenses / rowsCount;
     const currentRunway = financials.runway;
 
-    // Projected
-    const assumedSalaryPerHead = 5000; // $5k avg monthly salary assumption
-    const assumedROAS = 2.0; // Assume 2.0x Return on Ad Spend for new marketing
-    
-    const monthlyInterestRate = 0.01; // Assume 12% APR (1% per month) for new debt
-    
-    const marketingRevLift = marketingBoost * assumedROAS;
-    const headcountExp = headcountChange * assumedSalaryPerHead;
-    const churnLoss = avgRev * (customerChurn / 100);
-    const debtService = newLoan * monthlyInterestRate;
+    // Use interview cash if provided, else statement cash
+    const baseCash = interviewContext?.liquidCashNow != null 
+      ? Number(interviewContext.liquidCashNow) 
+      : (financials.latestCash || 0);
 
-    const simAvgRev = (avgRev * (1 + revAdj / 100)) + marketingRevLift - churnLoss;
-    const simAvgExp = (avgExp * (1 + expAdj / 100)) + headcountExp + marketingBoost + debtService;
+    const monthlyPayroll = Number(interviewContext?.monthlyPayroll) || 0;
+    const payrollSavings = (monthlyPayroll * (payrollCutPct / 100));
+
+    // Simulated revenue & expenses (NO fake 2.0x ROAS or $5k salary constants)
+    const simAvgRev = avgRev * (1 + revAdj / 100);
+    const nonPayrollExp = Math.max(0, avgExp - monthlyPayroll);
+    const simNonPayrollExp = nonPayrollExp * (1 + expAdj / 100);
+    const simPayrollExp = Math.max(0, monthlyPayroll - payrollSavings);
+
+    const simAvgExp = monthlyPayroll > 0 
+      ? (simNonPayrollExp + simPayrollExp) 
+      : (avgExp * (1 + expAdj / 100));
+
     const simMonthlyProfit = simAvgRev - simAvgExp;
     const simBurnRate = simAvgExp > simAvgRev ? simAvgExp - simAvgRev : 0;
     
-    const simCash = (financials.latestCash || 0) + Number(investment) + Number(newLoan);
+    const simCash = baseCash + Number(cashInjection);
     const simRunway = simBurnRate > 0 ? simCash / simBurnRate : null;
 
-    // Decision Impact Tag & Time to failure
     let timeToFailure = null;
     let impactTag = { label: "Neutral", color: "text-slate-400 border-slate-500/20 bg-slate-500/10" };
 
@@ -63,17 +64,17 @@ export default function ScenarioSimulation({ financials, risk, rowsCount }) {
       impactTag = { label: "Safe Move (Profitable)", color: "text-emerald-400 border-emerald-500/20 bg-emerald-500/10" };
     } else if (simRunway === null && currentRunway === null) {
       if (simMonthlyProfit > (financials.netProfit / rowsCount)) {
-        impactTag = { label: "Safe Move (Growth)", color: "text-emerald-400 border-emerald-500/20 bg-emerald-500/10" };
+        impactTag = { label: "Safe Move (Expansion)", color: "text-emerald-400 border-emerald-500/20 bg-emerald-500/10" };
       }
     } else if (simRunway !== null && currentRunway === null) {
-      impactTag = { label: "Dangerous (Burning Cash)", color: "text-rose-400 border-rose-500/20 bg-rose-500/10" };
+      impactTag = { label: "Dangerous (Cash Bleed)", color: "text-rose-400 border-rose-500/20 bg-rose-500/10" };
     } else if (simRunway !== null && currentRunway !== null) {
       if (simRunway > currentRunway * 1.2) {
         impactTag = { label: "Safe Move (Extended Runway)", color: "text-emerald-400 border-emerald-500/20 bg-emerald-500/10" };
       } else if (simRunway < currentRunway * 0.8) {
         impactTag = { label: "Dangerous", color: "text-rose-400 border-rose-500/20 bg-rose-500/10" };
       } else {
-        impactTag = { label: "Risky but viable", color: "text-amber-400 border-amber-500/20 bg-amber-500/10" };
+        impactTag = { label: "Moderate Impact", color: "text-amber-400 border-amber-500/20 bg-amber-500/10" };
       }
     }
 
@@ -89,33 +90,17 @@ export default function ScenarioSimulation({ financials, risk, rowsCount }) {
       timeToFailure,
       impactTag
     };
-  }, [financials, rowsCount, revAdj, expAdj, investment, headcountChange, marketingBoost, customerChurn, newLoan]);
+  }, [financials, rowsCount, interviewContext, revAdj, expAdj, cashInjection, payrollCutPct]);
 
-  const handleAskAI = async () => {
-    if (!prompt.trim() || cooldown > 0 || loading) return;
+  const handleSimulateInsights = async () => {
+    if (!prompt.trim()) return;
     setLoading(true);
     setError(null);
     try {
       const context = {
-        baseline: {
-          monthlyRevenue: financials.totalRevenue / rowsCount,
-          monthlyExpenses: financials.totalExpenses / rowsCount,
-          cash: financials.latestCash,
-          burnRate: financials.burnRate,
-          runway: financials.runway,
-          riskLevel: risk?.riskLevel
-        },
-        scenario: {
-          adjustments: {
-            revenueChangePct: revAdj,
-            expenseChangePct: expAdj,
-            newInvestment: investment,
-            headcountChange: headcountChange,
-            marketingBoost: marketingBoost,
-            customerChurnPct: customerChurn,
-            newLoan: newLoan
-          },
-          projected: {
+        financials: {
+          ...financials,
+          simulation: {
             simAvgRev: simParams.simAvgRev,
             simAvgExp: simParams.simAvgExp,
             simCash: simParams.simCash
@@ -124,7 +109,7 @@ export default function ScenarioSimulation({ financials, risk, rowsCount }) {
       };
       const res = await fetchSimulationInsights(context, prompt);
       setAiResponse(res.answer || res.error || "No response received.");
-      setCooldown(8); // 8 second cooldown
+      setCooldown(8);
     } catch (e) {
       setError(e.response?.data?.error || e.message || "Failed to get insights.");
     } finally {
@@ -135,34 +120,35 @@ export default function ScenarioSimulation({ financials, risk, rowsCount }) {
   if (!simParams) return null;
 
   return (
-    <div className="glass-panel p-6 rounded-2xl flex flex-col gap-8 xl:flex-row">
+    <div className="glass-panel p-6 rounded-2xl flex flex-col gap-8 xl:flex-row border-slate-200 dark:border-slate-800">
       {/* Controls & Scenarios */}
       <div className="flex-1 space-y-6">
         <div>
-          <h3 className="text-xl font-medium tracking-wide text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-2">
-            <span className="w-1.5 h-6 bg-zinc-400 rounded-full block"></span>
-            Scenario Engine
+          <h3 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-2">
+            <span className="w-1.5 h-6 bg-emerald-500 rounded-full block"></span>
+            Deterministic Scenario Modeling
           </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+            Stress-test operations using verified financial inputs. No arbitrary multipliers or estimated salaries.
+          </p>
           
           <div className="flex flex-wrap gap-2 mb-4">
-            <button onClick={() => setExpAdj(-10)} className="px-3 py-1 text-xs rounded border border-rose-500/30 bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors">Reduce Costs 10%</button>
-            <button onClick={() => setRevAdj(20)} className="px-3 py-1 text-xs rounded border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors">Increase Revenue 20%</button>
-            <button onClick={() => setHeadcountChange(5)} className="px-3 py-1 text-xs rounded border border-indigo-500/30 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors">Hire 5 Team</button>
-            <button onClick={() => setMarketingBoost(10000)} className="px-3 py-1 text-xs rounded border border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors">Boost Ads $10k</button>
-            <button onClick={() => setCustomerChurn(10)} className="px-3 py-1 text-xs rounded border border-orange-500/30 bg-orange-50 dark:bg-orange-500/10 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-500/20 transition-colors">10% Churn</button>
-            <button onClick={() => setNewLoan(100000)} className="px-3 py-1 text-xs rounded border border-cyan-500/30 bg-cyan-50 dark:bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 hover:bg-cyan-100 dark:hover:bg-cyan-500/20 transition-colors">Take $100k Loan</button>
-            <button onClick={() => { setRevAdj(0); setExpAdj(0); setInvestment(0); setHeadcountChange(0); setMarketingBoost(0); setCustomerChurn(0); setNewLoan(0); }} className="px-3 py-1 text-xs rounded border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors ml-auto">Reset</button>
+            <button onClick={() => setExpAdj(-15)} className="px-3 py-1 text-xs font-semibold rounded border border-rose-500/30 bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors">Cut Non-Payroll 15%</button>
+            <button onClick={() => setPayrollCutPct(20)} className="px-3 py-1 text-xs font-semibold rounded border border-amber-500/30 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors">Cut Payroll 20%</button>
+            <button onClick={() => setRevAdj(-20)} className="px-3 py-1 text-xs font-semibold rounded border border-slate-400/30 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors">Stress: -20% Revenue</button>
+            <button onClick={() => setCashInjection(50000)} className="px-3 py-1 text-xs font-semibold rounded border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 transition-colors">Inject $50k Capital</button>
+            <button onClick={() => { setRevAdj(0); setExpAdj(0); setCashInjection(0); setPayrollCutPct(0); }} className="px-3 py-1 text-xs font-semibold rounded border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors ml-auto">Reset</button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <label className="font-medium text-emerald-600 dark:text-emerald-400">Revenue Adjustment</label>
-              <span className="text-emerald-700 dark:text-emerald-100">{revAdj >= 0 ? "+" : ""}{revAdj}%</span>
+              <label className="font-semibold text-emerald-600 dark:text-emerald-400">Revenue Growth/Decline</label>
+              <span className="font-mono text-emerald-700 dark:text-emerald-300">{revAdj >= 0 ? "+" : ""}{revAdj}%</span>
             </div>
             <input 
-              type="range" min="-100" max="200" value={revAdj} 
+              type="range" min="-50" max="100" value={revAdj} 
               onChange={(e) => setRevAdj(Number(e.target.value))}
               className="w-full accent-emerald-500 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
             />
@@ -170,11 +156,11 @@ export default function ScenarioSimulation({ financials, risk, rowsCount }) {
 
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <label className="font-medium text-rose-600 dark:text-rose-400">Expenses Adjustment</label>
-              <span className="text-rose-700 dark:text-rose-100">{expAdj >= 0 ? "+" : ""}{expAdj}%</span>
+              <label className="font-semibold text-rose-600 dark:text-rose-400">Operating Cost Adjustment</label>
+              <span className="font-mono text-rose-700 dark:text-rose-300">{expAdj >= 0 ? "+" : ""}{expAdj}%</span>
             </div>
             <input 
-              type="range" min="-100" max="200" value={expAdj} 
+              type="range" min="-50" max="100" value={expAdj} 
               onChange={(e) => setExpAdj(Number(e.target.value))}
               className="w-full accent-rose-500 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
             />
@@ -182,166 +168,96 @@ export default function ScenarioSimulation({ financials, risk, rowsCount }) {
 
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <label className="font-medium text-indigo-600 dark:text-indigo-400">Headcount Change</label>
-              <span className="text-indigo-700 dark:text-indigo-100">{headcountChange > 0 ? "+" : ""}{headcountChange} people</span>
+              <label className="font-semibold text-amber-600 dark:text-amber-400">Payroll Reduction Target</label>
+              <span className="font-mono text-amber-700 dark:text-amber-300">{payrollCutPct}% cut</span>
             </div>
             <input 
-              type="range" min="-50" max="100" value={headcountChange} 
-              onChange={(e) => setHeadcountChange(Number(e.target.value))}
-              className="w-full accent-indigo-500 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <label className="font-medium text-amber-600 dark:text-amber-400">Marketing Boost/mo</label>
-              <span className="text-amber-700 dark:text-amber-100">${Number(marketingBoost).toLocaleString()}</span>
-            </div>
-            <input 
-              type="range" min="0" max="100000" step="1000" value={marketingBoost} 
-              onChange={(e) => setMarketingBoost(Number(e.target.value))}
+              type="range" min="0" max="60" step="5" value={payrollCutPct} 
+              onChange={(e) => setPayrollCutPct(Number(e.target.value))}
               className="w-full accent-amber-500 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
             />
           </div>
 
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <label className="font-medium text-orange-600 dark:text-orange-400">Customer Churn (%)</label>
-              <span className="text-orange-700 dark:text-orange-100">{customerChurn}%</span>
+              <label className="font-semibold text-blue-600 dark:text-blue-400">Emergency Cash Injection</label>
+              <span className="font-mono text-blue-700 dark:text-blue-300">${Number(cashInjection).toLocaleString()}</span>
             </div>
             <input 
-              type="range" min="0" max="50" value={customerChurn} 
-              onChange={(e) => setCustomerChurn(Number(e.target.value))}
-              className="w-full accent-orange-500 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
+              type="range" min="0" max="500000" step="10000" value={cashInjection} 
+              onChange={(e) => setCashInjection(Number(e.target.value))}
+              className="w-full accent-blue-500 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
             />
           </div>
+        </div>
 
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <label className="font-medium text-cyan-600 dark:text-cyan-400">New Debt Facility ($)</label>
-              <span className="text-cyan-700 dark:text-cyan-100">${Number(newLoan).toLocaleString()}</span>
-            </div>
-            <input 
-              type="range" min="0" max="1000000" step="10000" value={newLoan} 
-              onChange={(e) => setNewLoan(Number(e.target.value))}
-              className="w-full accent-cyan-500 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
-            />
+        {/* Live Simulation Results */}
+        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Simulated Monthly Run-Rate</h4>
+            <span className={`text-xs px-2.5 py-0.5 rounded-full border font-semibold ${simParams.impactTag.color}`}>
+              {simParams.impactTag.label}
+            </span>
           </div>
 
-          <div className="space-y-2 md:col-span-2">
-            <div className="flex justify-between text-sm">
-              <label className="font-medium text-black dark:text-zinc-400">Capital Injection (Equity $)</label>
-              <span className="text-black dark:text-zinc-300">${Number(investment).toLocaleString()}</span>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="p-3 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-xl">
+              <span className="text-[10px] text-slate-400 uppercase font-semibold">Sim. Revenue</span>
+              <p className="text-lg font-bold font-mono text-slate-900 dark:text-white mt-1">${Math.round(simParams.simAvgRev).toLocaleString()}</p>
             </div>
-            <input 
-              type="range" min="0" max="1000000" step="5000" value={investment} 
-              onChange={(e) => setInvestment(Number(e.target.value))}
-              className="w-full accent-black dark:accent-white h-1.5 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer"
-            />
+            <div className="p-3 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-xl">
+              <span className="text-[10px] text-slate-400 uppercase font-semibold">Sim. Expenses</span>
+              <p className="text-lg font-bold font-mono text-slate-900 dark:text-white mt-1">${Math.round(simParams.simAvgExp).toLocaleString()}</p>
+            </div>
+            <div className="p-3 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-xl">
+              <span className="text-[10px] text-slate-400 uppercase font-semibold">Sim. Net Profit</span>
+              <p className={`text-lg font-bold font-mono mt-1 ${simParams.simMonthlyProfit >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+                ${Math.round(simParams.simMonthlyProfit).toLocaleString()}
+              </p>
+            </div>
+            <div className="p-3 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/5 rounded-xl">
+              <span className="text-[10px] text-slate-400 uppercase font-semibold">Sim. Runway</span>
+              <p className="text-lg font-bold font-mono text-slate-900 dark:text-white mt-1">
+                {simParams.simRunway !== null ? `${Math.round(simParams.simRunway * 10) / 10} mo` : "∞ (Safe)"}
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="w-px bg-slate-200 dark:bg-white/10 hidden xl:block"></div>
+      {/* AI Assistant Sandbox */}
+      <div className="w-full xl:w-[360px] flex flex-col justify-between border-t xl:border-t-0 xl:border-l border-slate-200 dark:border-slate-800 pt-6 xl:pt-0 xl:pl-6">
+        <div>
+          <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 mb-2">
+            <span>Advisor Chat</span>
+          </h4>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+            Ask Gemini how this scenario impacts solvency and vendor covenants.
+          </p>
 
-      {/* Recalculated Output & AI */}
-      <div className="flex-1 space-y-6 flex flex-col justify-between">
-        <div className="flex justify-between items-start mb-2">
-           <h4 className="text-sm font-semibold uppercase text-slate-500 dark:text-slate-400">Before vs After</h4>
-           <div className={`px-2 py-1 text-xs font-bold uppercase rounded border tracking-wider ${simParams.impactTag.color}`}>
-             {simParams.impactTag.label}
-           </div>
-        </div>
-        
-        <div className="rounded-xl border border-slate-200 dark:border-white/5 overflow-hidden">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400">
-              <tr>
-                <th className="px-4 py-2 font-medium">Metric</th>
-                <th className="px-4 py-2 font-medium border-l border-slate-200 dark:border-white/5">Current</th>
-                <th className="px-4 py-2 font-medium border-l border-slate-200 dark:border-white/5 text-black dark:text-white dark:text-zinc-300">Simulated</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-white/5">
-              <tr className="bg-white dark:bg-slate-900/30">
-                <td className="px-4 py-3 text-slate-700 dark:text-slate-300">Avg Revenue/mo</td>
-                <td className="px-4 py-3 border-l border-slate-200 dark:border-white/5 font-mono text-slate-700 dark:text-slate-200">
-                  ${Math.round(simParams.avgRev).toLocaleString()}
-                </td>
-                <td className={`px-4 py-3 border-l border-slate-200 dark:border-white/5 font-mono font-bold ${simParams.simAvgRev > simParams.avgRev ? 'text-emerald-500 dark:text-emerald-400' : simParams.simAvgRev < simParams.avgRev ? 'text-rose-500 dark:text-rose-400' : 'text-black dark:text-white dark:text-zinc-300'}`}>
-                  ${Math.round(simParams.simAvgRev).toLocaleString()}
-                </td>
-              </tr>
-              <tr className="bg-white dark:bg-slate-900/30">
-                <td className="px-4 py-3 text-slate-700 dark:text-slate-300">Avg Expenses/mo</td>
-                <td className="px-4 py-3 border-l border-slate-200 dark:border-white/5 font-mono text-slate-700 dark:text-slate-200">
-                  ${Math.round(simParams.avgExp).toLocaleString()}
-                </td>
-                <td className={`px-4 py-3 border-l border-slate-200 dark:border-white/5 font-mono font-bold ${simParams.simAvgExp < simParams.avgExp ? 'text-emerald-500 dark:text-emerald-400' : simParams.simAvgExp > simParams.avgExp ? 'text-rose-500 dark:text-rose-400' : 'text-black dark:text-white dark:text-zinc-300'}`}>
-                  ${Math.round(simParams.simAvgExp).toLocaleString()}
-                </td>
-              </tr>
-              <tr className="bg-white dark:bg-slate-900/30">
-                <td className="px-4 py-3 text-slate-700 dark:text-slate-300">Avg Profit/mo</td>
-                <td className={`px-4 py-3 border-l border-slate-200 dark:border-white/5 font-mono ${simParams.avgRev - simParams.avgExp >= 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
-                  ${Math.round(simParams.avgRev - simParams.avgExp).toLocaleString()}
-                </td>
-                <td className={`px-4 py-3 border-l border-slate-200 dark:border-white/5 font-mono font-bold ${simParams.simMonthlyProfit >= 0 ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
-                  ${Math.round(simParams.simMonthlyProfit).toLocaleString()}
-                </td>
-              </tr>
-              <tr className="bg-white dark:bg-slate-900/30">
-                <td className="px-4 py-3 text-slate-700 dark:text-slate-300">Cash Balance</td>
-                <td className="px-4 py-3 border-l border-slate-200 dark:border-white/5 font-mono text-slate-700 dark:text-slate-200">
-                  ${Math.round(financials.latestCash || 0).toLocaleString()}
-                </td>
-                <td className={`px-4 py-3 border-l border-slate-200 dark:border-white/5 font-mono font-bold ${simParams.simCash > (financials.latestCash || 0) ? 'text-emerald-500 dark:text-emerald-400' : simParams.simCash < (financials.latestCash || 0) ? 'text-rose-500 dark:text-rose-400' : 'text-black dark:text-white dark:text-zinc-300'}`}>
-                  ${Math.round(simParams.simCash).toLocaleString()}
-                </td>
-              </tr>
-              <tr className="bg-white dark:bg-slate-900/30">
-                <td className="px-4 py-3 text-slate-700 dark:text-slate-300">Runway</td>
-                <td className="px-4 py-3 border-l border-slate-200 dark:border-white/5 font-mono text-slate-700 dark:text-slate-200">
-                  {financials.runway !== null ? `${financials.runway} mo` : '∞'}
-                </td>
-                <td className="px-4 py-3 border-l border-slate-200 dark:border-white/5 font-mono font-bold text-black dark:text-white dark:text-zinc-300">
-                  {simParams.simRunway !== null ? `${simParams.simRunway.toFixed(1)} mo` : '∞ (Sustainable)'}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          {simParams.timeToFailure && (
-            <div className="bg-rose-500/10 border-t border-rose-500/20 px-4 py-2 text-xs text-rose-300 font-medium text-center">
-               ⚠️ {simParams.timeToFailure}
-            </div>
-          )}
-        </div>
-
-        <div className="bg-white dark:bg-transparent dark:bg-gradient-to-br dark:from-zinc-900/40 dark:to-slate-900/60 p-4 rounded-xl border border-slate-200 dark:border-black/10 dark:border-white/10 shadow-sm dark:shadow-sm dark:shadow-[0_0_15px_rgba(255,255,255,0.05)]">
-          <label className="text-xs font-semibold text-black dark:text-zinc-300 uppercase mb-2 block">AI Scenario Consultant</label>
-          <div className="flex gap-2">
-            <input 
-              type="text" 
-              placeholder="e.g. Is this safe if market slows down?"
-              className="flex-1 bg-slate-50 dark:bg-black/30 border border-slate-200 dark:border-white/10 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-black/30 dark:focus:border-white/30 transition-colors"
+          <div className="space-y-3">
+            <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleAskAI()}
+              placeholder="e.g. Can we survive 6 months if revenue falls 15%?"
+              rows={3}
+              className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-3 text-xs text-slate-900 dark:text-white outline-none focus:border-emerald-500 resize-none"
             />
-            <button 
-              onClick={handleAskAI}
-              disabled={loading || !prompt.trim() || cooldown > 0}
-              className="bg-black dark:bg-white dark:text-black text-white hover:bg-zinc-800 dark:bg-zinc-200 dark:text-black text-white disabled:opacity-50 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all min-w-[80px]"
+            <button
+              onClick={handleSimulateInsights}
+              disabled={loading || cooldown > 0 || !prompt.trim()}
+              className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50 transition-colors"
             >
-              {loading ? "..." : cooldown > 0 ? `Wait ${cooldown}s` : "Ask AI"}
+              {loading ? "Analyzing Scenario..." : cooldown > 0 ? `Wait ${cooldown}s` : "Query Advisor"}
             </button>
           </div>
-          
-          {error && <div className="mt-3 text-xs text-rose-500 dark:text-rose-400">{error}</div>}
-          
+
+          {error && <p className="text-xs text-rose-500 mt-2">{error}</p>}
+
           {aiResponse && (
-            <div className="mt-4 text-sm text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-black/20 p-3 rounded-lg border border-black/10 dark:border-white/10 whitespace-pre-line">
-              <span className="text-black dark:text-white font-bold mr-1">AI:</span> {aiResponse}
+            <div className="mt-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-3 text-xs text-slate-700 dark:text-slate-300 max-h-[180px] overflow-y-auto">
+              <p className="font-semibold text-slate-900 dark:text-white mb-1">Advisor Evaluation:</p>
+              {aiResponse}
             </div>
           )}
         </div>

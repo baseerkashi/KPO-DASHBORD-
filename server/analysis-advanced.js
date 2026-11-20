@@ -25,68 +25,53 @@ import { getBenchmark, computePercentile } from "./benchmarks.js";
  *   X3 = EBIT / Total Assets
  *   X4 = Book Value of Equity / Total Liabilities
  * 
- * If full balance sheet data isn't available, we estimate from income statement data.
+ * If full balance sheet data is not available, we return status: "insufficient_data"
+ * rather than fabricating proxy numbers.
  */
 export function computeAltmanZScore(rows, financials) {
   const result = {
     score: null,
     zone: null,
     components: {},
-    dataQuality: "estimated", // 'actual' if full balance sheet columns exist
+    dataQuality: null,
     available: false,
+    status: "insufficient_data",
+    hint: "Add total_assets and equity columns to your spreadsheet to enable Altman Z'-Score computation.",
   };
 
   const n = rows.length;
-  if (n < 3) return result;
-
-  // Try to extract balance sheet data from rows
-  const lastRow = rows[n - 1];
-  const hasAssets = lastRow.total_assets != null;
-  const hasEquity = lastRow.equity != null;
-  const hasRetainedEarnings = lastRow.retained_earnings != null;
-
-  let totalAssets, equity, retainedEarnings, totalLiabilities, workingCapital;
-
-  if (hasAssets && hasEquity) {
-    // Actual balance sheet data available
-    totalAssets = parseFloat(lastRow.total_assets) || 0;
-    equity = parseFloat(lastRow.equity) || 0;
-    totalLiabilities = totalAssets - equity;
-    retainedEarnings = hasRetainedEarnings 
-      ? (parseFloat(lastRow.retained_earnings) || 0)
-      : financials.netProfit * 0.6; // Estimate: 60% of profit retained
-    workingCapital = lastRow.working_capital != null 
-      ? parseFloat(lastRow.working_capital) 
-      : (financials.latestCash || 0) - (totalLiabilities * 0.3); // Estimate current liabilities as 30% of total
-    
-    result.dataQuality = "actual";
-  } else {
-    // Estimate from income statement data (proxy model)
-    const annualizedRevenue = (financials.totalRevenue / n) * 12;
-    const annualizedExpenses = (financials.totalExpenses / n) * 12;
-    const annualizedProfit = annualizedRevenue - annualizedExpenses;
-    
-    // Asset estimation: Revenue / Asset Turnover (use industry median ~1.2)
-    totalAssets = annualizedRevenue / 1.2;
-    if (totalAssets <= 0) totalAssets = 1;
-    
-    // Liabilities estimation
-    totalLiabilities = financials.latestDebt || (totalAssets * 0.5);
-    equity = totalAssets - totalLiabilities;
-    
-    // Retained earnings: cumulative profit proxy
-    retainedEarnings = annualizedProfit * 0.6;
-    
-    // Working capital: cash minus estimated current liabilities  
-    workingCapital = (financials.latestCash || 0) - (totalLiabilities * 0.3);
-    
-    result.dataQuality = "estimated";
+  if (n < 3) {
+    result.hint = "Need at least 3 periods of data.";
+    return result;
   }
+
+  // Try to extract real balance sheet data from rows
+  const lastRow = rows[n - 1];
+  const hasAssets = lastRow?.total_assets != null && !isNaN(parseFloat(lastRow.total_assets)) && parseFloat(lastRow.total_assets) > 0;
+  const hasEquity = lastRow?.equity != null && !isNaN(parseFloat(lastRow.equity));
+
+  // Strict honest math: Only compute if real balance sheet columns exist
+  if (!hasAssets || !hasEquity) {
+    return result;
+  }
+
+  const totalAssets = parseFloat(lastRow.total_assets);
+  const equity = parseFloat(lastRow.equity);
+  const totalLiabilities = totalAssets - equity;
 
   if (totalAssets <= 0) return result;
 
-  // EBIT = Net Profit (roughly, for MSEs without separate interest/tax lines)
-  const ebit = financials.netProfit / n * 12; // Annualized
+  const hasRetainedEarnings = lastRow.retained_earnings != null && !isNaN(parseFloat(lastRow.retained_earnings));
+  const retainedEarnings = hasRetainedEarnings 
+    ? parseFloat(lastRow.retained_earnings) 
+    : financials.netProfit * 0.6;
+
+  const workingCapital = lastRow.working_capital != null && !isNaN(parseFloat(lastRow.working_capital))
+    ? parseFloat(lastRow.working_capital) 
+    : (financials.latestCash || 0) - (totalLiabilities * 0.3);
+
+  // EBIT = Net Profit (annualized for MSEs without separate interest/tax lines)
+  const ebit = (financials.netProfit / n) * 12;
 
   // Compute components
   const X1 = workingCapital / totalAssets;
@@ -104,6 +89,9 @@ export function computeAltmanZScore(rows, financials) {
   result.score = Math.round(zScore * 100) / 100;
   result.zone = zone;
   result.available = true;
+  result.status = "computed";
+  result.dataQuality = "actual";
+  result.hint = null;
   result.components = {
     X1: Math.round(X1 * 1000) / 1000,
     X2: Math.round(X2 * 1000) / 1000,
@@ -130,17 +118,25 @@ export function computeAltmanZScore(rows, financials) {
  */
 export function computeDuPont(rows, financials) {
   const n = rows.length;
-  if (n < 1) return { available: false };
+  if (n < 1) return { available: false, status: "insufficient_data" };
+
+  const lastRow = rows[n - 1];
+  const hasAssets = lastRow?.total_assets != null && !isNaN(parseFloat(lastRow.total_assets)) && parseFloat(lastRow.total_assets) > 0;
+  const hasEquity = lastRow?.equity != null && !isNaN(parseFloat(lastRow.equity));
+
+  // Strict honest math: Only compute if real balance sheet columns exist
+  if (!hasAssets || !hasEquity) {
+    return {
+      available: false,
+      status: "insufficient_data",
+      hint: "Add total_assets and equity columns to your spreadsheet to enable DuPont analysis.",
+    };
+  }
 
   const annualizedRevenue = (financials.totalRevenue / n) * 12;
   const annualizedProfit = (financials.netProfit / n) * 12;
-
-  // Estimate total assets and equity if not directly available
-  const lastRow = rows[n - 1];
-  let totalAssets = lastRow?.total_assets ? parseFloat(lastRow.total_assets) : annualizedRevenue / 1.2;
-  let equity = lastRow?.equity ? parseFloat(lastRow.equity) : totalAssets * 0.5;
-
-  if (totalAssets <= 0) totalAssets = 1;
+  const totalAssets = parseFloat(lastRow.total_assets);
+  let equity = parseFloat(lastRow.equity);
   if (equity <= 0) equity = 1;
 
   const netProfitMargin = annualizedRevenue > 0 ? (annualizedProfit / annualizedRevenue) * 100 : 0;
@@ -150,11 +146,12 @@ export function computeDuPont(rows, financials) {
 
   return {
     available: true,
+    status: "computed",
     roe: Math.round(roe * 100) / 100,
     netProfitMargin: Math.round(netProfitMargin * 100) / 100,
     assetTurnover: Math.round(assetTurnover * 100) / 100,
     equityMultiplier: Math.round(equityMultiplier * 100) / 100,
-    dataQuality: lastRow?.total_assets ? "actual" : "estimated",
+    dataQuality: "actual",
   };
 }
 
@@ -441,31 +438,22 @@ export function computeEnhancedRisk(rows, financials, industry) {
     detail: `Cash/monthly-expenses ratio: ${Math.round(currentRatioProxy * 100) / 100}`,
   });
 
-  // 8. Revenue Concentration (5%) — can only estimate from data variability
-  let concentrationRisk = 30; // Default medium (we can't truly measure this without customer-level data)
-  factors.push({
-    name: "Revenue Concentration",
-    weight: 0.05,
-    score: concentrationRisk,
-    detail: "Estimated from revenue pattern analysis",
-  });
-
-  // 9. Altman Z-Score Factor (12%)
-  let zScoreRisk = 50;
+  // 8. Altman Z-Score Factor (12%) — only added if verifiable balance sheet data exists
   const zResult = computeAltmanZScore(rows, financials);
   if (zResult.available) {
+    let zScoreRisk = 50;
     if (zResult.zone === "Safe") zScoreRisk = 10;
     else if (zResult.zone === "Grey") zScoreRisk = 55;
     else zScoreRisk = 90;
+    factors.push({
+      name: "Altman Z-Score",
+      weight: 0.12,
+      score: zScoreRisk,
+      detail: `Z'=${zResult.score} (${zResult.zone} Zone)`,
+    });
   }
-  factors.push({
-    name: "Altman Z-Score",
-    weight: 0.12,
-    score: zScoreRisk,
-    detail: zResult.available ? `Z'=${zResult.score} (${zResult.zone} Zone)` : "Insufficient data",
-  });
 
-  // 10. Growth Sustainability (8%) — revenue growth minus expense growth
+  // 9. Growth Sustainability (8%) — revenue growth minus expense growth
   let sustainabilityRisk = 40;
   if (n >= 4) {
     const avgRevenueGrowth = financials.averageMonthlyGrowthRate;
@@ -491,32 +479,46 @@ export function computeEnhancedRisk(rows, financials, industry) {
     detail: "Revenue growth vs expense growth gap",
   });
 
+  // Dynamically re-normalize weights across only the active available factors
+  const totalWeight = factors.reduce((sum, f) => sum + f.weight, 0);
+  const normalizedFactors = factors.map(f => ({
+    ...f,
+    weight: totalWeight > 0 ? Math.round((f.weight / totalWeight) * 1000) / 1000 : 1 / factors.length,
+  }));
+
   // Compute weighted total
-  const totalScore = Math.round(factors.reduce((sum, f) => sum + f.score * f.weight, 0));
+  const totalScore = Math.min(
+    100,
+    Math.max(0, Math.round(normalizedFactors.reduce((sum, f) => sum + f.score * f.weight, 0)))
+  );
 
   let level = "Low";
   if (totalScore >= 60) level = "High";
   else if (totalScore >= 35) level = "Medium";
 
   // Generate risk indicators from high-scoring factors
-  const indicators = factors
+  const indicators = normalizedFactors
     .filter(f => f.score >= 60)
     .sort((a, b) => b.score * b.weight - a.score * a.weight)
     .map(f => `${f.name}: ${f.detail}`);
 
   if (indicators.length === 0) {
-    indicators.push("No major financial red flags detected across all 10 assessment factors.");
+    indicators.push("No major financial red flags detected across assessed factors.");
   }
+
+  const profitFactor = normalizedFactors.find(f => f.name === "Profit Margin");
+  const growthFactor = normalizedFactors.find(f => f.name === "Revenue Growth");
+  const liquidityFactor = normalizedFactors.find(f => f.name === "Liquidity");
 
   return {
     riskScore: totalScore,
     riskLevel: level,
     riskIndicators: indicators,
-    factors,
+    factors: normalizedFactors,
     breakdown: {
-      profitability: factors[0].score,
-      growth: factors[1].score,
-      liquidity: factors[4].score,
+      profitability: profitFactor ? profitFactor.score : 50,
+      growth: growthFactor ? growthFactor.score : 50,
+      liquidity: liquidityFactor ? liquidityFactor.score : 50,
     },
   };
 }

@@ -14,8 +14,13 @@ export default function ZScoreGauge({ altmanZScore, className = "" }) {
   if (!altmanZScore?.available) {
     return (
       <div className={`glass-panel p-5 ${className}`}>
-        <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Altman Z-Score</h3>
-        <p className="text-xs text-slate-400 dark:text-slate-500">Insufficient data for Z-Score computation. Add balance sheet columns (total_assets, equity) for full analysis.</p>
+        <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Altman Z'-Score</h3>
+        <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4 text-center">
+          <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">Balance sheet columns required</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            Provide verifiable <span className="font-mono text-emerald-600 dark:text-emerald-400">total_assets</span> and <span className="font-mono text-emerald-600 dark:text-emerald-400">equity</span> columns in your upload to compute institutional solvency scores without proxy assumptions.
+          </p>
+        </div>
       </div>
     );
   }

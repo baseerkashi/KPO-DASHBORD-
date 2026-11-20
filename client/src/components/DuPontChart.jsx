@@ -9,7 +9,12 @@ export default function DuPontChart({ duPont, className = "" }) {
     return (
       <div className={`glass-panel p-5 ${className}`}>
         <h3 className="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">DuPont Analysis</h3>
-        <p className="text-xs text-slate-400 dark:text-slate-500">Insufficient data for DuPont decomposition.</p>
+        <div className="rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/40 p-4 text-center">
+          <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">Balance sheet columns required</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            DuPont 3-factor ROE decomposition requires verified <span className="font-mono text-emerald-600 dark:text-emerald-400">total_assets</span> and <span className="font-mono text-emerald-600 dark:text-emerald-400">equity</span> balance sheet entries.
+          </p>
+        </div>
       </div>
     );
   }

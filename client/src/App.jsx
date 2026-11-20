@@ -6,12 +6,45 @@ import Layout from "./components/Layout.jsx";
 import ClientList from "./components/ClientList.jsx";
 import ClientDetail from "./components/ClientDetail.jsx";
 import AnalysisDashboard from "./components/AnalysisDashboard.jsx";
+import { fetchMe } from "./api.js";
 
 const LandingPage = lazy(() => import("./components/LandingPage.jsx"));
 
 function ProtectedRoute({ children }) {
-  const isAuthenticated = !!sessionStorage.getItem("vertex_jwt");
-  return isAuthenticated ? children : <Navigate to="/login" />;
+  const [authStatus, setAuthStatus] = useState(() => {
+    return sessionStorage.getItem("vertex_authenticated") ? "authenticated" : "checking";
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    fetchMe()
+      .then(() => {
+        if (isMounted) {
+          sessionStorage.setItem("vertex_authenticated", "true");
+          setAuthStatus("authenticated");
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          sessionStorage.removeItem("vertex_authenticated");
+          sessionStorage.removeItem("vertex_jwt");
+          setAuthStatus("unauthenticated");
+        }
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  if (authStatus === "checking") {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-900 text-white">
+        <div className="text-sm font-medium text-slate-400">Verifying session...</div>
+      </div>
+    );
+  }
+
+  return authStatus === "authenticated" ? children : <Navigate to="/login" replace />;
 }
 
 export default function App() {

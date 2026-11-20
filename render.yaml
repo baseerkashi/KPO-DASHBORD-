@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: vertex-turnaround
+    env: docker
+    plan: starter
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    disk:
+      name: vertex-data
+      mountPath: /data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5001
+      - key: DB_PATH
+        value: /data/vertex.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENABLE_DEMO
+        value: "true"
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false

@@ -1,7 +1,4 @@
-import { useState, useRef } from "react";
-import { Cpu, Download, Loader2 } from "lucide-react";
-import html2canvas from "html2canvas";
-import jsPDF from "jspdf";
+import { Cpu } from "lucide-react";
 import KpiStrip from "./KpiStrip.jsx";
 import FinancialAnalysis from "./FinancialAnalysis.jsx";
 import RiskAssessment from "./RiskAssessment.jsx";
@@ -19,35 +16,6 @@ export default function Overview({
 }) {
   const f = analysis?.financials;
   const r = analysis?.risk;
-  
-  const reportRef = useRef(null);
-  const [isExporting, setIsExporting] = useState(false);
-
-  const generatePDF = async () => {
-    if (!reportRef.current) return;
-    setIsExporting(true);
-    try {
-      // Force light theme styles just for the canvas so printer looks perfect
-      const element = reportRef.current;
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-      });
-      const imgData = canvas.toDataURL("image/png");
-      
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-      pdf.save("Vertex_Financial_Strategy_Report.pdf");
-    } catch (e) {
-      console.error("PDF Export failed:", e);
-    } finally {
-      setIsExporting(false);
-    }
-  };
 
   return (
     <div className="space-y-5">
@@ -71,17 +39,9 @@ export default function Overview({
               Command center
               <span className="h-px flex-1 bg-gradient-to-l from-transparent to-zinc-500/30" />
             </h2>
-            <button
-              onClick={generatePDF}
-              disabled={isExporting}
-              className="ml-4 flex items-center gap-2 rounded-lg bg-black px-3 py-1.5 text-xs font-semibold text-white transition-all hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
-            >
-              {isExporting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
-              {isExporting ? "Exporting..." : "Export Report"}
-            </button>
           </div>
           
-          <div ref={reportRef} className="space-y-5">
+          <div className="space-y-5">
             <div>
               <KpiStrip financials={f} risk={r} />
             </div>

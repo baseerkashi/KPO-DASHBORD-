@@ -1,14 +1,18 @@
-import { Sparkles, RefreshCw } from "lucide-react";
+import { Sparkles, RefreshCw, Info } from "lucide-react";
 
-export default function AIInsights({ insights, loading, error, onRefresh, className = "" }) {
+export default function AIInsights({ insights = [], loading, error, onRefresh, className = "" }) {
+  const validInsights = insights.filter(
+    (ins) => typeof ins === "string" || ins.category !== "Setup"
+  );
+
   return (
-    <section className={`glass-panel border-black/10 dark:border-white/10 dark:border-white/10 p-5 ${className}`}>
+    <section className={`glass-panel border-black/10 dark:border-white/10 p-5 ${className}`}>
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-black dark:text-white dark:text-zinc-400" />
+          <Sparkles className="h-5 w-5 text-indigo-500" />
           <div>
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">AI insights</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-500">OpenAI via server · key in server/.env only</p>
+            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">AI Qualitative Insights</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Restructuring advisory synthesis & benchmark comparisons</p>
           </div>
         </div>
         <button
@@ -18,22 +22,32 @@ export default function AIInsights({ insights, loading, error, onRefresh, classN
           className="inline-flex items-center gap-2 rounded-xl border border-black/10 dark:border-white/10 bg-zinc-100 dark:bg-white/5 px-4 py-2 text-sm font-semibold text-zinc-900 dark:text-zinc-100 transition-all hover:border-black/30 dark:hover:border-white/30 hover:bg-zinc-200 dark:hover:bg-white/10 hover:shadow-md disabled:opacity-50"
         >
           <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-          {loading ? "Thinking…" : "Refresh"}
+          {loading ? "Synthesizing…" : "Refresh Commentary"}
         </button>
       </div>
 
       {error && (
         <div
-          className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-100/90"
+          className="mb-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 p-4 text-sm text-slate-700 dark:text-slate-300"
           role="status"
         >
-          {error}
+          <div className="flex items-start gap-3">
+            <Info className="h-5 w-5 text-indigo-500 shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="font-semibold text-slate-900 dark:text-white text-sm">
+                AI commentary unavailable — deterministic metrics and PDF memo remain fully active
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                Turnaround triage, runway simulations, Altman Z'-Scores, and the Executive PDF Memo are 100% deterministic and continue to function with complete mathematical precision without an LLM key.
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
-      {insights.length > 0 && (
+      {validInsights.length > 0 && (
         <ul className="space-y-4">
-          {insights.map((insight, i) => {
+          {validInsights.map((insight, i) => {
             if (typeof insight === 'string') {
                // Fallback if formatting failed
                return (

@@ -5,7 +5,7 @@ import TopBar from "./TopBar.jsx";
 import { api } from "../api";
 
 const SECTIONS = [
-  { id: "dashboard", label: "Client Database", path: "/clients" }
+  { id: "dashboard", label: "Companies", path: "/clients" }
 ];
 
 export default function Layout({ theme, setTheme }) {
@@ -44,7 +44,7 @@ export default function Layout({ theme, setTheme }) {
       <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-white dark:bg-black transition-colors">
         <TopBar
           title="Vertex"
-          subtitle="Enterprise financial intelligence and risk assessment platform."
+          subtitle="Financial triage and turnaround advisory for businesses in recovery."
           apiOnline={apiOnline}
           hasData={true}
           theme={theme}

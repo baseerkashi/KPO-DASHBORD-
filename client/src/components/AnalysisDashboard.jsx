@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import { fetchAnalysis, fetchInsights } from "../api";
 import Overview from "./Overview";
 import ScenarioSimulation from "./ScenarioSimulation";
@@ -8,9 +8,11 @@ import DuPontChart from "./DuPontChart";
 import BenchmarkComparison from "./BenchmarkComparison";
 import VarianceTable from "./VarianceTable";
 import DataWarnings from "./DataWarnings";
-import { ArrowLeft, Loader2, Download, Trash2, FileText } from "lucide-react";
+import DiagnosticInterview from "./DiagnosticInterview";
+import VitalSignsStrip from "./VitalSignsStrip";
+import ImpactPainMatrix from "./ImpactPainMatrix";
+import { ArrowLeft, Loader2, Download, Trash2, FileText, Sliders } from "lucide-react";
 import { api, deleteAnalysis } from "../api";
-import { useNavigate } from "react-router-dom";
 
 export default function AnalysisDashboard() {
   const { id } = useParams();
@@ -19,8 +21,16 @@ export default function AnalysisDashboard() {
   const [error, setError] = useState(null);
   const [insightsLoading, setInsightsLoading] = useState(false);
   const [insightsError, setInsightsError] = useState(null);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("matrix");
+  const [showInterviewModal, setShowInterviewModal] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.openInterview) {
+      setShowInterviewModal(true);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     loadAnalysis();
@@ -47,9 +57,14 @@ export default function AnalysisDashboard() {
     setInsightsError(null);
     try {
       const data = await fetchInsights(analysisId);
-      setAnalysis(prev => ({ ...prev, insights: data.insights }));
+      if (data.error || (data.insights && data.insights.some(i => i.category === "Setup"))) {
+        setInsightsError("AI commentary unavailable — deterministic metrics and PDF memo remain fully active");
+        setAnalysis(prev => ({ ...prev, insights: [] }));
+      } else {
+        setAnalysis(prev => ({ ...prev, insights: data.insights || [] }));
+      }
     } catch (e) {
-      setInsightsError("Failed to load AI insights. " + (e.response?.data?.error || e.message));
+      setInsightsError("AI commentary unavailable — deterministic metrics and PDF memo remain fully active");
     } finally {
       setInsightsLoading(false);
     }
@@ -94,7 +109,7 @@ export default function AnalysisDashboard() {
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch (e) {
-      alert("PDF generation requires Pro plan or failed.");
+      alert("Failed to generate PDF report.");
     }
   };
 
@@ -107,9 +122,10 @@ export default function AnalysisDashboard() {
   }
 
   const tabs = [
-    { id: "overview", label: "Overview" },
-    { id: "advanced", label: "Advanced Analysis" },
-    { id: "simulation", label: "Scenario Planner" },
+    { id: "matrix", label: "Recovery Matrix" },
+    { id: "overview", label: "Financial Overview" },
+    { id: "advanced", label: "Solvency & Diagnostics" },
+    { id: "simulation", label: "Scenario Sandbox" },
   ];
 
   return (
@@ -118,13 +134,20 @@ export default function AnalysisDashboard() {
         <div>
           <Link to={`/clients/${analysis.client_id || ""}`} className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-black dark:text-slate-400 dark:hover:text-white mb-2">
             <ArrowLeft className="h-4 w-4" />
-            Back to Client
+            Back to Company
           </Link>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-3">
              Analysis: {analysis.period_title}
           </h1>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowInterviewModal(true)}
+            className="flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors"
+          >
+            <Sliders className="h-3.5 w-3.5" />
+            Edit Triage Inputs
+          </button>
           <button
             onClick={downloadTemplate}
             className="flex items-center gap-2 rounded-lg border border-black/10 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors"
@@ -149,6 +172,30 @@ export default function AnalysisDashboard() {
         </div>
       </div>
 
+      {/* Hero Vital Signs Strip */}
+      <VitalSignsStrip 
+        vitalSigns={analysis.turnaround?.vitalSigns}
+        onEditTriage={() => setShowInterviewModal(true)}
+      />
+
+      {/* Diagnostic Interview Modal */}
+      {showInterviewModal && (
+        <DiagnosticInterview
+          analysisId={analysis.id}
+          initialData={analysis.interview_context || {}}
+          latestCash={analysis.financials?.latestCash || 0}
+          onComplete={(turnaround, newContext) => {
+            setAnalysis((prev) => ({
+              ...prev,
+              turnaround,
+              interview_context: newContext,
+            }));
+            setShowInterviewModal(false);
+          }}
+          onClose={() => setShowInterviewModal(false)}
+        />
+      )}
+
       {/* Data Validation Warnings */}
       {analysis.validation && (
         <DataWarnings validation={analysis.validation} />
@@ -172,6 +219,13 @@ export default function AnalysisDashboard() {
       </div>
 
       {/* Tab Content */}
+      {activeTab === "matrix" && (
+        <ImpactPainMatrix 
+          turnaround={analysis.turnaround}
+          onEditInputs={() => setShowInterviewModal(true)}
+        />
+      )}
+
       {activeTab === "overview" && (
         <Overview 
           hasData={true}
@@ -244,11 +298,11 @@ export default function AnalysisDashboard() {
 
       {activeTab === "simulation" && (
         <div>
-          <h2 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white mb-4">Interactive Scenario Planner</h2>
           <ScenarioSimulation
             financials={analysis.financials}
             risk={analysis.risk}
-            rowsCount={analysis.parsed_data.length}
+            rowsCount={analysis.parsed_data?.length || 0}
+            interviewContext={analysis.interview_context}
           />
         </div>
       )}

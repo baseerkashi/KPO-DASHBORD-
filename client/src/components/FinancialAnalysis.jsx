@@ -13,13 +13,13 @@ import { BarChart3 } from "lucide-react";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
-const NEON = {
-  bar: "rgba(34, 211, 238, 0.65)",
-  barBorder: "rgba(34, 211, 238, 0.95)",
-  pie: ["#22d3ee", "#a855f7", "#60a5fa", "#34d399", "#f472b6", "#818cf8", "#2dd4bf"],
+const PALETTE = {
+  bar: "rgba(16, 185, 129, 0.65)",
+  barBorder: "rgba(16, 185, 129, 0.95)",
+  pie: ["#10b981", "#334155", "#475569", "#0f766e", "#f59e0b", "#ef4444", "#64748b"],
 };
 
-const chartText = "#e2e8f0";
+const chartText = "#94a3b8";
 const chartGrid = "rgba(148, 163, 184, 0.12)";
 
 export default function FinancialAnalysis({ financials, className = "", hideMiniStats = false }) {
@@ -32,8 +32,8 @@ export default function FinancialAnalysis({ financials, className = "", hideMini
       {
         label: "Sales",
         data: salesTrend.map((x) => x.sales),
-        backgroundColor: NEON.bar,
-        borderColor: NEON.barBorder,
+        backgroundColor: PALETTE.bar,
+        borderColor: PALETTE.barBorder,
         borderWidth: 1,
         borderRadius: 6,
       },
@@ -45,7 +45,7 @@ export default function FinancialAnalysis({ financials, className = "", hideMini
     maintainAspectRatio: false,
     plugins: {
       legend: { labels: { color: chartText, font: { size: 11 } } },
-      title: { display: true, text: "Sales pulse", color: chartText, font: { size: 14, weight: "600" } },
+      title: { display: true, text: "Sales Trend", color: chartText, font: { size: 14, weight: "600" } },
     },
     scales: {
       x: { ticks: { color: "#94a3b8" }, grid: { color: chartGrid } },
@@ -58,7 +58,7 @@ export default function FinancialAnalysis({ financials, className = "", hideMini
     datasets: [
       {
         data: costBreakdown.map((x) => x.value),
-        backgroundColor: costBreakdown.map((_, i) => NEON.pie[i % NEON.pie.length]),
+        backgroundColor: costBreakdown.map((_, i) => PALETTE.pie[i % PALETTE.pie.length]),
         borderWidth: 2,
         borderColor: "rgba(15, 23, 42, 0.9)",
         hoverOffset: 8,

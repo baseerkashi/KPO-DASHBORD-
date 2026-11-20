@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Logo from "./Logo";
-import { signup } from "../api";
+import { signup, fetchMe } from "../api";
 import { ArrowLeft } from "lucide-react";
 
 export default function Signup({ theme }) {
@@ -28,18 +28,23 @@ export default function Signup({ theme }) {
 
   // If already logged in, redirect
   useEffect(() => {
-    if (sessionStorage.getItem("vertex_jwt")) {
-      navigate("/clients");
-    }
-  }, []);
+    fetchMe()
+      .then(() => navigate("/clients"))
+      .catch(() => {});
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!password || password.length < 8) {
+      setError(true);
+      setErrorMessage("Password must be at least 8 characters long.");
+      return;
+    }
     setLoading(true);
     setError(false);
     try {
-      const data = await signup(email, password, name);
-      sessionStorage.setItem("vertex_jwt", data.token);
+      await signup(email, password, name);
+      sessionStorage.setItem("vertex_authenticated", "true");
       navigate("/clients");
     } catch (err) {
       setError(true);

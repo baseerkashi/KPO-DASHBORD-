@@ -84,7 +84,7 @@ export default function ClientList() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Client Database</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Companies</h1>
         <div className="flex items-center gap-2">
           <button
             onClick={downloadTemplate}
@@ -98,14 +98,14 @@ export default function ClientList() {
             className="flex items-center gap-2 rounded-lg bg-black px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-zinc-200"
           >
             <Plus className="h-4 w-4" />
-            New Client
+            New Company
           </button>
         </div>
       </div>
 
       {showForm && (
         <form onSubmit={handleCreate} className="glass-panel p-5 animate-in fade-in slide-in-from-top-4">
-          <h2 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">Create New Client</h2>
+          <h2 className="mb-4 text-sm font-semibold text-slate-900 dark:text-white">Create New Company Workspace</h2>
           <div className="flex gap-4 flex-wrap">
             <input
               type="text"
@@ -141,7 +141,7 @@ export default function ClientList() {
               disabled={creating}
               className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-50"
             >
-              {creating ? "Creating..." : "Save Client"}
+              {creating ? "Creating..." : "Save Company"}
             </button>
           </div>
         </form>
@@ -150,15 +150,15 @@ export default function ClientList() {
       {clients.length === 0 ? (
         <div className="glass-panel border-black/10 dark:border-white/10 p-16 text-center">
           <Users className="mx-auto mb-4 h-12 w-12 text-zinc-300 dark:text-zinc-600" />
-          <h3 className="text-lg font-medium text-slate-900 dark:text-white">No clients found</h3>
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 mb-6">Add a client to start analyzing financials, or load demo data.</p>
+          <h3 className="text-lg font-medium text-slate-900 dark:text-white">No companies found</h3>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400 mb-6">Add a company to start analyzing financials, or load demo data.</p>
           <button
             onClick={seedDemo}
             disabled={seeding}
-            className="inline-flex items-center gap-2 rounded-lg bg-indigo-500 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-indigo-600 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-emerald-700 disabled:opacity-50"
           >
             <Sparkles className="h-4 w-4" />
-            {seeding ? "Loading Demo..." : "Load Demo Data"}
+            {seeding ? "Loading Demo..." : "Load Demo Company"}
           </button>
         </div>
       ) : (
